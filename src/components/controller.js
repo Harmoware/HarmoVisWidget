@@ -7,7 +7,7 @@ const Checkbox = React.memo(({id,onChange,title,className='harmovis_input_checkb
   <label htmlFor={id} title={title}>{title}</label></>)
 
 const Controller = (props)=>{
-  const { settime, timeBegin, timeLength, actions, multiplySpeed, animatePause, animateReverse,
+  const { settime, timeBegin, timeLength, actions, multiplySpeed, animatePause, animateReverse, leading,
     getMoveOptionChecked, getMoveOptionArcChecked, getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked,
     getIconCubeTypeSelected, iconCubeType, getMoveOptionLineChecked, status } = props;
 
@@ -76,10 +76,10 @@ const Controller = (props)=>{
         <li></li>
         <li className="flex_column">
           <label htmlFor="ElapsedTimeRange">経過時間
-          <ElapsedTimeValue settime={settime} timeBegin={timeBegin} timeLength={timeLength} actions={actions} />&nbsp;/&nbsp;
+          <ElapsedTimeValue settime={settime} timeBegin={timeBegin} timeLength={timeLength} actions={actions} min={leading*-1} />&nbsp;/&nbsp;
           <input type="number" value={timeLength} onChange={e=>actions.setTimeLength(+e.target.value)} className="harmovis_input_number" min={0} max={timeLength} />&nbsp;秒
           </label>
-          <ElapsedTimeRange settime={settime} timeLength={timeLength} timeBegin={timeBegin} actions={actions} id="ElapsedTimeRange" />
+          <ElapsedTimeRange settime={settime} timeLength={timeLength} timeBegin={timeBegin} actions={actions} min={leading*-1} id="ElapsedTimeRange" />
         </li>
         {React.useMemo(()=>
           <li className="flex_column">
