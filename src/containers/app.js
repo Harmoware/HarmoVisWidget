@@ -20,7 +20,6 @@ const App = (props)=>{
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, depotsData, widgetParam } = props;
-  const optionVisible = false;
 
   React.useEffect(()=>{
     actions.setDefaultViewport({defaultZoom:13});
@@ -107,13 +106,24 @@ const App = (props)=>{
 
   const sizeScale = React.useMemo(()=>(Math.max(17 - viewport.zoom,2)**2)*2,[viewport.zoom]);
 
-  const movesLayerProps = { routePaths, movesbase, movedData, clickedObject, actions, optionVisible, onHover,
+  const movesLayerProps = { routePaths, movesbase, movedData, clickedObject, actions, onHover,
     optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
     optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconChange: state.iconChange,
     iconCubeType: state.iconCubeType, sizeScale: (state.iconCubeType === 0 ? sizeScale : (sizeScale/10)), }
 
-  const depotsLayerProps = { depotsData, optionVisible, onHover,
+  const depotsLayerProps = { depotsData, onHover,
     optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconChange: state.iconChange, }
+
+  const getLayer = ()=>{
+    const returnLayer = []
+    if(movedData.length > 0){
+      returnLayer.push(new MovesLayer({ ...movesLayerProps }))
+    }
+    if(depotsData.length > 0){
+      returnLayer.push(new DepotsLayer({ ...depotsLayerProps }))
+    }
+    return returnLayer
+  }
 
   return (
     <Container {...props}>
@@ -132,10 +142,7 @@ const App = (props)=>{
         <HarmoVisLayers
           viewport={viewport} actions={actions}
           mapboxApiAccessToken={widgetParam.mapboxApiKey}
-          layers={[
-            new MovesLayer({ ...movesLayerProps }),
-            new DepotsLayer({ ...depotsLayerProps }),
-          ]}
+          layers={getLayer()}
         />
       </div>
       <svg width={viewport.width} height={viewport.height} className="harmovis_overlay">
