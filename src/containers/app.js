@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
+import DeckGL from '@deck.gl/react';
+import { PointCloudLayer, LineLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
 import {
   Container, connectToHarmowareVis, HarmoVisLayers, MovesLayer, DepotsLayer, LoadingIcon
 } from 'harmoware-vis';
 import Controller from '../components/controller';
+
+const INITIAL_VIEW_STATE = {
+  target: [0, 0, 0],
+  rotationX: 5,
+  rotationOrbit: -5,
+  zoom: 4
+};
 
 const initState = {
   moveOptionVisible: false,
@@ -17,9 +26,12 @@ const initState = {
 const App = (props)=>{
   const [popup,setPopup] = React.useState([0, 0, ''])
   const [state,setState] = React.useState(initState)
+  const [viewState, updateViewState] = useState(INITIAL_VIEW_STATE);
+  const [pointSiza, setPointSiza] = useState(4);
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, depotsData, widgetParam } = props;
+  const {orbitViewSw=false} = widgetParam
 
   React.useEffect(()=>{
     actions.setDefaultViewport({defaultZoom:13});
@@ -104,26 +116,53 @@ const App = (props)=>{
     setState({ ...state, iconCubeType: +e.target.value });
   }
 
-  const sizeScale = React.useMemo(()=>(Math.max(17 - viewport.zoom,2)**2)*2,[viewport.zoom]);
-
-  const movesLayerProps = { routePaths, movesbase, movedData, clickedObject, actions, onHover,
-    optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
-    optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconChange: state.iconChange,
-    iconCubeType: state.iconCubeType, sizeScale: (state.iconCubeType === 0 ? sizeScale : (sizeScale/10)), }
-
-  const depotsLayerProps = { depotsData, onHover,
-    optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconChange: state.iconChange, }
-
   const getLayer = ()=>{
+    const sizeScale = orbitViewSw ? 1:React.useMemo(()=>(Math.max(17 - viewport.zoom,2)**2)*2,[viewport.zoom]);
     const returnLayer = []
     if(movedData.length > 0){
-      returnLayer.push(new MovesLayer({ ...movesLayerProps }))
+      const {movesLayer} = widgetParam
+      if(!movesLayer || movesLayer === "MovesLayer" && !orbitViewSw){
+        returnLayer.push(new MovesLayer({ routePaths, movesbase, movedData, clickedObject, actions, onHover,
+          optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
+          optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconChange: state.iconChange,
+          iconCubeType: state.iconCubeType, sizeScale: (state.iconCubeType === 0 ? sizeScale : (sizeScale/10)), }))
+      }
+      else
+      if(movesLayer === "PointCloudLayer"){
+        returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
+            coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+            getPosition: x => x.position, getColor: x => x.color || [0,255,0,255],
+            pointSize: pointSiza, pickable: true, onHover
+          })
+        )
+      }
     }
-    if(depotsData.length > 0){
-      returnLayer.push(new DepotsLayer({ ...depotsLayerProps }))
+    if(depotsData.length > 0 && !orbitViewSw){
+      const {depotsLayer} = widgetParam
+      if(!depotsLayer || depotsLayer === "DepotsLayer"){
+        returnLayer.push(new DepotsLayer({ depotsData, onHover,
+          optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconChange: state.iconChange, }))
+      }
+    }
+    if(orbitViewSw){
+      returnLayer.push(new LineLayer({
+        id:'LineLayer',
+        data: [
+          {sourcePosition:[50,0,0],targetPosition:[-50,0,0],color:[255,0,0,255]},
+          {sourcePosition:[0,50,0],targetPosition:[0,-50,0],color:[255,255,0,255]},
+          {sourcePosition:[0,0,50],targetPosition:[0,0,-50],color:[0,255,255,255]},
+        ],
+        coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+        getWidth: 1,
+        widthMinPixels: 1,
+        getColor: (x) => x.color || [255,255,255,255],
+        opacity: 1,
+      }))
     }
     return returnLayer
   }
+
+  const harmoVisLayersProps = {viewport,actions,mapboxApiAccessToken:widgetParam.mapboxApiKey,layers:getLayer()}
 
   return (
     <Container {...props}>
@@ -139,11 +178,12 @@ const App = (props)=>{
         getIconCubeTypeSelected={getIconCubeTypeSelected}
       />
       <div className="harmovis_area">
-        <HarmoVisLayers
-          viewport={viewport} actions={actions}
-          mapboxApiAccessToken={widgetParam.mapboxApiKey}
-          layers={getLayer()}
-        />
+        {!orbitViewSw ?
+          <HarmoVisLayers {...harmoVisLayersProps} />:
+          <DeckGL views={new OrbitView({orbitAxis: 'Z', fov: 50})}
+            viewState={viewState} controller={{scrollZoom:{smooth:true}}}
+            onViewStateChange={v => updateViewState(v.viewState)}
+            layers={getLayer()} />}
       </div>
       <svg width={viewport.width} height={viewport.height} className="harmovis_overlay">
         <g fill="white" fontSize="12">
