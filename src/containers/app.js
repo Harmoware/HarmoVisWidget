@@ -38,8 +38,8 @@ const App = (props)=>{
     actions.setDefaultViewport({defaultZoom:13});
     const {property} = widgetParam
     if(property){
-      actions.setLeading(property.leading ? property.leading:10);
-      actions.setTrailing(property.trailing ? property.trailing:0);
+      actions.setLeading(property.leading !== undefined ? property.leading:10);
+      actions.setTrailing(property.trailing !== undefined ? property.trailing:0);
       if(property.secperhour !== undefined){
         actions.setSecPerHour(property.secperhour);
       }
