@@ -46,9 +46,6 @@ const App = (props)=>{
       if(property.multiplySpeed !== undefined){
         actions.setMultiplySpeed(property.multiplySpeed);
       }
-      if(property.noLoop !== undefined){
-        actions.setNoLoop(property.noLoop);
-      }
     }
   },[])
 
