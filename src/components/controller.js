@@ -74,7 +74,7 @@ const Controller = (props)=>{
                 if(movesLayer === "PointCloudLayer"){
                   return(<>
                     <li className="flex_column">
-                    <label htmlFor="setPointSiza">{`ポイントサイズ:`}</label>
+                    <label htmlFor="setPointSiza">{`ポイントサイズ=${pointSiza}`}</label>
                       <input type="range" value={pointSiza} min={0} max={10} step={0.1} onChange={setPointSiza}
                         className='harmovis_input_range' id='setPointSiza' title={pointSiza}/>
                     </li>
