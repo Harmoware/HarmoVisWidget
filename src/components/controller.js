@@ -9,7 +9,16 @@ const Checkbox = React.memo(({id,onChange,title,className='harmovis_input_checkb
 const Controller = (props)=>{
   const { settime, timeBegin, timeLength, actions, multiplySpeed, animatePause, animateReverse, leading,
     getMoveOptionChecked, getMoveOptionArcChecked, getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked,
-    getIconCubeTypeSelected, iconCubeType, getMoveOptionLineChecked, status } = props;
+    getIconCubeTypeSelected, getMoveOptionLineChecked, status, pointSiza, orbitViewScale, widgetParam } = props;
+  const {orbitViewSw=false} = widgetParam
+
+  const setOrbitViewScale = (e)=>{
+    props.setOrbitViewScale(+e.target.checked);
+  }
+
+  const setPointSiza = (e)=>{
+    props.setPointSiza(+e.target.value);
+  }
 
   const listExpansion = (id)=>{
     let obj=document.getElementById(id).style;
@@ -27,35 +36,56 @@ const Controller = (props)=>{
           ,[])}
           <ul>
             <span id="expand1" style={{'display': 'none','clear': 'both'}}>
-              <li className="flex_row">
-                <Checkbox id="IconChangeChecked" onChange={getIconChangeChecked} title='アイコン表示パターン切替' checked={status.iconChange} />
-              </li>
-              {React.useMemo(()=>
-                <li className="flex_row">
-                  <div className="form-select" title='３Ｄアイコン表示タイプ切替'>
-                    <label htmlFor="IconCubeTypeSelect">３Ｄアイコン表示タイプ切替</label>
-                    <select id="IconCubeTypeSelect" value={iconCubeType} onChange={getIconCubeTypeSelected} className="harmovis_select">
-                    <option value="0">SimpleMeshLayer</option>
-                    <option value="1">ScenegraphLayer</option>
-                    </select>
-                  </div>
-                </li>
-              ,[iconCubeType])}
-              <li className="flex_row">
-                <Checkbox id="MoveOptionChecked" onChange={getMoveOptionChecked} title='運行データグラフ表示' checked={status.moveOptionVisible} />
-              </li>
-              <li className="flex_row">
-                <Checkbox id="MoveOptionArcChecked" onChange={getMoveOptionArcChecked} title='運行データアーチ表示' checked={status.moveOptionArcVisible} />
-              </li>
-              <li className="flex_row">
-                <Checkbox id="MoveOptionLineChecked" onChange={getMoveOptionLineChecked} title='運行データライン表示' checked={status.moveOptionLineVisible} />
-              </li>
-              <li className="flex_row">
-                <Checkbox id="DepotOptionChecked" onChange={getDepotOptionChecked} title='停留所データオプション表示' checked={status.depotOptionVisible} />
-              </li>
-              <li className="flex_row">
-                <Checkbox id="OptionChangeChecked" onChange={getOptionChangeChecked} title='オプション表示パターン切替' checked={status.optionChange} />
-              </li>
+              {(()=>{
+                const {movesLayer} = widgetParam
+                if((!movesLayer || movesLayer === "MovesLayer") && !orbitViewSw){
+                  return(<>
+                    <li className="flex_row">
+                      <Checkbox id="IconChangeChecked" onChange={getIconChangeChecked} title='アイコン表示パターン切替' checked={status.iconChange} />
+                    </li>
+                    {React.useMemo(()=>
+                      <li className="flex_row">
+                        <div className="form-select" title='３Ｄアイコン表示タイプ切替'>
+                          <label htmlFor="IconCubeTypeSelect">３Ｄアイコン表示タイプ切替</label>
+                          <select id="IconCubeTypeSelect" value={status.iconCubeType} onChange={getIconCubeTypeSelected} className="harmovis_select">
+                          <option value="0">SimpleMeshLayer</option>
+                          <option value="1">ScenegraphLayer</option>
+                          </select>
+                        </div>
+                      </li>
+                    ,[status.iconCubeType])}
+                    <li className="flex_row">
+                      <Checkbox id="MoveOptionChecked" onChange={getMoveOptionChecked} title='運行データグラフ表示' checked={status.moveOptionVisible} />
+                    </li>
+                    <li className="flex_row">
+                      <Checkbox id="MoveOptionArcChecked" onChange={getMoveOptionArcChecked} title='運行データアーチ表示' checked={status.moveOptionArcVisible} />
+                    </li>
+                    <li className="flex_row">
+                      <Checkbox id="MoveOptionLineChecked" onChange={getMoveOptionLineChecked} title='運行データライン表示' checked={status.moveOptionLineVisible} />
+                    </li>
+                    <li className="flex_row">
+                      <Checkbox id="DepotOptionChecked" onChange={getDepotOptionChecked} title='停留所データオプション表示' checked={status.depotOptionVisible} />
+                    </li>
+                    <li className="flex_row">
+                      <Checkbox id="OptionChangeChecked" onChange={getOptionChangeChecked} title='オプション表示パターン切替' checked={status.optionChange} />
+                    </li>
+                  </>)
+                }else
+                if(movesLayer === "PointCloudLayer"){
+                  return(<>
+                    <li className="flex_column">
+                    <label htmlFor="setPointSiza">{`ポイントサイズ:`}</label>
+                      <input type="range" value={pointSiza} min={0} max={10} step={0.1} onChange={setPointSiza}
+                        className='harmovis_input_range' id='setPointSiza' title={pointSiza}/>
+                    </li>
+                    {orbitViewSw ?
+                    <li className="flex_row">
+                      <Checkbox id="OptionChangeChecked" onChange={setOrbitViewScale} title='基準線表示' checked={orbitViewScale} />
+                    </li>:null}
+                  </>)
+                }
+                return(<></>)
+              })()}
             </span>
           </ul>
         </li>

@@ -28,6 +28,7 @@ const App = (props)=>{
   const [state,setState] = React.useState(initState)
   const [viewState, updateViewState] = useState(INITIAL_VIEW_STATE);
   const [pointSiza, setPointSiza] = useState(4);
+  const [orbitViewScale, setOrbitViewScale] = useState(true);
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, depotsData, widgetParam } = props;
@@ -35,8 +36,20 @@ const App = (props)=>{
 
   React.useEffect(()=>{
     actions.setDefaultViewport({defaultZoom:13});
-    actions.setLeading(widgetParam.leading ? widgetParam.leading:10);
-    actions.setTrailing(widgetParam.trailing ? widgetParam.trailing:0);
+    const {property} = widgetParam
+    if(property){
+      actions.setLeading(property.leading ? property.leading:10);
+      actions.setTrailing(property.trailing ? property.trailing:0);
+      if(property.secperhour !== undefined){
+        actions.setSecPerHour(property.secperhour);
+      }
+      if(property.multiplySpeed !== undefined){
+        actions.setMultiplySpeed(property.multiplySpeed);
+      }
+      if(property.noLoop !== undefined){
+        actions.setNoLoop(property.noLoop);
+      }
+    }
   },[])
 
   React.useEffect(()=>{
@@ -121,7 +134,7 @@ const App = (props)=>{
     const returnLayer = []
     if(movedData.length > 0){
       const {movesLayer} = widgetParam
-      if(!movesLayer || movesLayer === "MovesLayer" && !orbitViewSw){
+      if((!movesLayer || movesLayer === "MovesLayer") && !orbitViewSw){
         returnLayer.push(new MovesLayer({ routePaths, movesbase, movedData, clickedObject, actions, onHover,
           optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
           optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconChange: state.iconChange,
@@ -144,7 +157,7 @@ const App = (props)=>{
           optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconChange: state.iconChange, }))
       }
     }
-    if(orbitViewSw){
+    if(orbitViewSw && orbitViewScale){
       returnLayer.push(new LineLayer({
         id:'LineLayer',
         data: [
@@ -168,7 +181,8 @@ const App = (props)=>{
     <Container {...props}>
       <Controller
         {...props} status={state}
-        iconCubeType={state.iconCubeType}
+        pointSiza={pointSiza} setPointSiza={setPointSiza}
+        orbitViewScale={orbitViewScale} setOrbitViewScale={setOrbitViewScale}
         getMoveOptionChecked={getMoveOptionChecked}
         getMoveOptionArcChecked={getMoveOptionArcChecked}
         getMoveOptionLineChecked={getMoveOptionLineChecked}
