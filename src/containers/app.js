@@ -130,28 +130,48 @@ const App = (props)=>{
     const sizeScale = orbitViewSw ? 1:React.useMemo(()=>(Math.max(17 - viewport.zoom,2)**2)*2,[viewport.zoom]);
     const returnLayer = []
     if(movedData.length > 0){
-      const {movesLayer} = widgetParam
-      if((!movesLayer || movesLayer === "MovesLayer") && !orbitViewSw){
-        returnLayer.push(new MovesLayer({ routePaths, movesbase, movedData, clickedObject, actions, onHover,
-          optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
-          optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconChange: state.iconChange,
-          iconCubeType: state.iconCubeType, sizeScale: (state.iconCubeType === 0 ? sizeScale : (sizeScale/10)), }))
+      let {movesLayer:movesLayers} = widgetParam
+      if(!movesLayers){
+        movesLayers = ["MovesLayer"]
       }
-      else
-      if(movesLayer === "PointCloudLayer"){
-        returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
-            coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-            getPosition: x => x.position, getColor: x => x.color || [0,255,0,255],
-            pointSize: pointSiza, pickable: true, onHover
-          })
-        )
+      if(!Array.isArray(movesLayers)){
+        movesLayers = [movesLayers]
       }
+      const set = new Set(movesLayers);
+      movesLayers = [...set];
+      for(const movesLayer of movesLayers){
+        if((movesLayer === "MovesLayer") && !orbitViewSw){
+          returnLayer.push(new MovesLayer({ routePaths, movesbase, movedData, clickedObject, actions, onHover,
+            optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
+            optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconChange: state.iconChange,
+            iconCubeType: state.iconCubeType, sizeScale: (state.iconCubeType === 0 ? sizeScale : (sizeScale/10)), }))
+        }
+        else
+        if(movesLayer === "PointCloudLayer"){
+          returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
+              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+              getPosition: x => x.position, getColor: x => x.color || [0,255,0,255],
+              pointSize: pointSiza, pickable: true, onHover
+            })
+          )
+        }
+      }      
     }
     if(depotsData.length > 0 && !orbitViewSw){
-      const {depotsLayer} = widgetParam
-      if(!depotsLayer || depotsLayer === "DepotsLayer"){
-        returnLayer.push(new DepotsLayer({ depotsData, onHover,
-          optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconChange: state.iconChange, }))
+      let {depotsLayer:depotsLayers} = widgetParam
+      if(!depotsLayers){
+        depotsLayers = ["DepotsLayer"]
+      }
+      if(!Array.isArray(depotsLayers)){
+        depotsLayers = [depotsLayers]
+      }
+      const set = new Set(depotsLayers);
+      depotsLayers = [...set];
+      for(const depotsLayer of depotsLayers){
+        if(depotsLayer === "DepotsLayer"){
+          returnLayer.push(new DepotsLayer({ depotsData, onHover,
+            optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconChange: state.iconChange, }))
+        }
       }
     }
     if(orbitViewSw && orbitViewScale){
