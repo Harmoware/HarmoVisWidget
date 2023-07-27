@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DeckGL from '@deck.gl/react';
-import { PointCloudLayer, LineLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
+import { PointCloudLayer, TextLayer, LineLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
 import {
   Container, connectToHarmowareVis, HarmoVisLayers, MovesLayer, DepotsLayer, LoadingIcon
 } from 'harmoware-vis';
@@ -28,6 +28,7 @@ const App = (props)=>{
   const [state,setState] = React.useState(initState)
   const [viewState, updateViewState] = useState(INITIAL_VIEW_STATE);
   const [pointSiza, setPointSiza] = useState(4);
+  const [textSiza, setTextSiza] = useState(5);
   const [orbitViewScale, setOrbitViewScale] = useState(true);
 
   const { actions, clickedObject, viewport, loading,
@@ -145,13 +146,20 @@ const App = (props)=>{
             optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
             optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconChange: state.iconChange,
             iconCubeType: state.iconCubeType, sizeScale: (state.iconCubeType === 0 ? sizeScale : (sizeScale/10)), }))
-        }
-        else
+        }else
         if(movesLayer === "PointCloudLayer"){
           returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
               getPosition: x => x.position, getColor: x => x.color || [0,255,0,255],
               pointSize: pointSiza, pickable: true, onHover
+            })
+          )
+        }else
+        if(movesLayer === "TextLayer"){
+          returnLayer.push(new TextLayer({ id: 'TextLayer', data: movedData,
+              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+              getPosition: x => x.position, getText: x => x.text, getColor: [255,255,255,255],
+              getSize: textSiza, getTextAnchor: 'start', characterSet: 'auto', pickable: true, onHover
             })
           )
         }
@@ -199,6 +207,7 @@ const App = (props)=>{
       <Controller
         {...props} status={state}
         pointSiza={pointSiza} setPointSiza={setPointSiza}
+        textSiza={textSiza} setTextSiza={setTextSiza}
         orbitViewScale={orbitViewScale} setOrbitViewScale={setOrbitViewScale}
         getMoveOptionChecked={getMoveOptionChecked}
         getMoveOptionArcChecked={getMoveOptionArcChecked}

@@ -9,7 +9,7 @@ const Checkbox = React.memo(({id,onChange,title,className='harmovis_input_checkb
 const Controller = (props)=>{
   const { settime, timeBegin, timeLength, actions, multiplySpeed, animatePause, animateReverse, leading,
     getMoveOptionChecked, getMoveOptionArcChecked, getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked,
-    getIconCubeTypeSelected, getMoveOptionLineChecked, status, pointSiza, orbitViewScale, widgetParam } = props;
+    getIconCubeTypeSelected, getMoveOptionLineChecked, status, pointSiza, textSiza, orbitViewScale, widgetParam } = props;
   const {orbitViewSw=false} = widgetParam
 
   const setOrbitViewScale = (e)=>{
@@ -18,6 +18,10 @@ const Controller = (props)=>{
 
   const setPointSiza = (e)=>{
     props.setPointSiza(+e.target.value);
+  }
+
+  const setTextSiza = (e)=>{
+    props.setTextSiza(+e.target.value);
   }
 
   const listExpansion = (id)=>{
@@ -46,7 +50,7 @@ const Controller = (props)=>{
                 }
                 const set = new Set(movesLayers);
                 movesLayers = [...set];
-                return movesLayers.map((movesLayer)=>{
+                const result = movesLayers.map((movesLayer)=>{
                   if((movesLayer === "MovesLayer") && !orbitViewSw){
                     return(<>
                       <li className="flex_row">
@@ -79,7 +83,7 @@ const Controller = (props)=>{
                         <Checkbox id="OptionChangeChecked" onChange={getOptionChangeChecked} title='オプション表示パターン切替' checked={status.optionChange} />
                       </li>
                     </>)
-                  }else
+                  }
                   if(movesLayer === "PointCloudLayer"){
                     return(<>
                       <li className="flex_column">
@@ -87,14 +91,25 @@ const Controller = (props)=>{
                         <input type="range" value={pointSiza} min={0} max={10} step={0.1} onChange={setPointSiza}
                           className='harmovis_input_range' id='setPointSiza' title={pointSiza}/>
                       </li>
-                      {orbitViewSw ?
-                      <li className="flex_row">
-                        <Checkbox id="OptionChangeChecked" onChange={setOrbitViewScale} title='基準線表示' checked={orbitViewScale} />
-                      </li>:null}
                     </>)
                   }
-                  return(<></>)
+                  if(movesLayer === "TextLayer"){
+                    return(<>
+                      <li className="flex_column">
+                      <label htmlFor="setTextSiza">{`テキストサイズ=${textSiza}`}</label>
+                        <input type="range" value={textSiza} min={0} max={10} step={0.1} onChange={setTextSiza}
+                          className='harmovis_input_range' id='setTextSiza' title={textSiza}/>
+                      </li>
+                    </>)
+                  }
                 })
+                if(orbitViewSw){
+                  result.push(<>
+                    <li className="flex_row">
+                      <Checkbox id="OptionChangeChecked" onChange={setOrbitViewScale} title='基準線表示' checked={orbitViewScale} />
+                    </li></>)
+                }
+                return result
               })()}
             </span>
           </ul>
