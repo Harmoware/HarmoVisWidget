@@ -158,7 +158,7 @@ const App = (props)=>{
         if(movesLayer === "TextLayer"){
           returnLayer.push(new TextLayer({ id: 'TextLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getText: x => x.text, getColor: [255,255,255,255],
+              getPosition: x => x.position, getText: x => x.text, getColor: x => x.textColor || [255,255,255,255],
               getSize: textSiza, getTextAnchor: 'start', characterSet: 'auto', pickable: true, onHover
             })
           )
