@@ -23,6 +23,17 @@ const initState = {
   iconCubeType: 0,
 }
 
+export const colorPallet = [
+  [undefined,         "default"],
+  [[255,255,255,255], "white"],
+  [[255,0,0,255],     "red"],
+  [[0,255,0,255],     "green"],
+  [[0,0,255,255],     "blue"],
+  [[0,255,255,255],   "cyan"],
+  [[255,0,255,255],   "magenta"],
+  [[255,255,0,255],   "yellow"],
+]
+
 const App = (props)=>{
   const [popup,setPopup] = React.useState([0, 0, ''])
   const [state,setState] = React.useState(initState)
@@ -30,10 +41,13 @@ const App = (props)=>{
   const [pointSiza, setPointSiza] = useState(4);
   const [textSiza, setTextSiza] = useState(5);
   const [orbitViewScale, setOrbitViewScale] = useState(true);
+  const [iconColor, setIconColor] = useState(0);
+  const [dpIconColor, setDpIconColor] = useState(0);
 
   const { actions, clickedObject, viewport, loading,
-    routePaths, movesbase, movedData, depotsData, widgetParam } = props;
+    routePaths, movesbase, movedData, widgetParam } = props;
   const {orbitViewSw=false} = widgetParam
+  const depotsData = [...props.depotsData]
 
   React.useEffect(()=>{
     actions.setDefaultViewport({defaultZoom:13});
@@ -82,6 +96,10 @@ const App = (props)=>{
       actions.setDepotsBase([]);
     }
   },[widgetParam.depotsBase])
+
+  React.useEffect(()=>{
+    depotsData.reverse()
+  },[dpIconColor])
 
   const arrStrConv = (value)=>Array.isArray(value)?`[${value.map(el=>arrStrConv(el))}]`:value.toString()
   const onHover = (el)=>{
@@ -142,15 +160,19 @@ const App = (props)=>{
       movesLayers = [...set];
       for(const movesLayer of movesLayers){
         if((movesLayer === "MovesLayer") && !orbitViewSw){
+          const iconlayer = (!state.iconChange ? 'Scatterplot':
+            state.iconCubeType === 0 ? 'SimpleMesh':state.iconCubeType === 1 ? 'Scenegraph':'Scatterplot');
           returnLayer.push(new MovesLayer({ routePaths, movesbase, movedData, clickedObject, actions, onHover,
             optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
-            optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconChange: state.iconChange,
-            iconCubeType: state.iconCubeType, sizeScale: (state.iconCubeType === 0 ? sizeScale : (sizeScale/10)), }))
+            optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconlayer,
+            sizeScale: (iconlayer === 'SimpleMesh' ? sizeScale : (sizeScale/10)),
+            iconDesignations:[{layer:iconlayer,getColor:x=>colorPallet[iconColor][0]||x.color||[0,255,0]}]
+          }))
         }else
         if(movesLayer === "PointCloudLayer"){
           returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getColor: x => x.color || [0,255,0,255],
+              getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x.color||[0,255,0],
               pointSize: pointSiza, pickable: true, onHover
             })
           )
@@ -166,6 +188,7 @@ const App = (props)=>{
       }      
     }
     if(depotsData.length > 0 && !orbitViewSw){
+      const iconlayer = (!state.iconChange ? 'Scatterplot':'SimpleMesh');
       let {depotsLayer:depotsLayers} = widgetParam
       if(!depotsLayers){
         depotsLayers = ["DepotsLayer"]
@@ -178,7 +201,9 @@ const App = (props)=>{
       for(const depotsLayer of depotsLayers){
         if(depotsLayer === "DepotsLayer"){
           returnLayer.push(new DepotsLayer({ depotsData, onHover,
-            optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconChange: state.iconChange, }))
+            optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconlayer,
+            iconDesignations:[{layer:iconlayer, getColor:x=>colorPallet[dpIconColor][0]||x.color||[166,89,166]}]
+          }))
         }
       }
     }
@@ -201,22 +226,15 @@ const App = (props)=>{
   }
 
   const harmoVisLayersProps = {viewport,actions,mapboxApiAccessToken:widgetParam.mapboxApiKey,layers:getLayer()}
+  const controllerProps = {...props, status:state,
+    pointSiza, setPointSiza, textSiza, setTextSiza, iconColor, setIconColor, dpIconColor, setDpIconColor,
+    orbitViewScale, setOrbitViewScale, getMoveOptionChecked, getMoveOptionArcChecked, getMoveOptionLineChecked,
+    getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked, getIconCubeTypeSelected,
+  }
 
   return (
     <Container {...props}>
-      <Controller
-        {...props} status={state}
-        pointSiza={pointSiza} setPointSiza={setPointSiza}
-        textSiza={textSiza} setTextSiza={setTextSiza}
-        orbitViewScale={orbitViewScale} setOrbitViewScale={setOrbitViewScale}
-        getMoveOptionChecked={getMoveOptionChecked}
-        getMoveOptionArcChecked={getMoveOptionArcChecked}
-        getMoveOptionLineChecked={getMoveOptionLineChecked}
-        getDepotOptionChecked={getDepotOptionChecked}
-        getOptionChangeChecked={getOptionChangeChecked}
-        getIconChangeChecked={getIconChangeChecked}
-        getIconCubeTypeSelected={getIconCubeTypeSelected}
-      />
+      <Controller {...controllerProps} />
       <div className="harmovis_area">
         {!orbitViewSw ?
           <HarmoVisLayers {...harmoVisLayersProps} />:

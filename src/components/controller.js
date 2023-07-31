@@ -1,15 +1,16 @@
 import * as React from 'react';
 import { AddMinutesButton, PlayButton, PauseButton, ReverseButton, ForwardButton, ElapsedTimeRange, ElapsedTimeValue,
   SpeedRange, SpeedValue, SimulationDateTime } from 'harmoware-vis';
-
+import {colorPallet} from '../containers/app'
+ 
 const Checkbox = React.memo(({id,onChange,title,className='harmovis_input_checkbox',checked})=>
   <><input type="checkbox" id={id} onChange={onChange} className={className} checked={checked} />
   <label htmlFor={id} title={title}>{title}</label></>)
 
 const Controller = (props)=>{
-  const { settime, timeBegin, timeLength, actions, multiplySpeed, animatePause, animateReverse, leading,
+  const { settime, timeBegin, timeLength, actions, multiplySpeed, animatePause, animateReverse, leading, movedData, depotsData,
     getMoveOptionChecked, getMoveOptionArcChecked, getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked,
-    getIconCubeTypeSelected, getMoveOptionLineChecked, status, pointSiza, textSiza, orbitViewScale, widgetParam } = props;
+    getIconCubeTypeSelected, getMoveOptionLineChecked, status, pointSiza, textSiza, iconColor, dpIconColor, orbitViewScale, widgetParam } = props;
   const {orbitViewSw=false} = widgetParam
 
   const setOrbitViewScale = (e)=>{
@@ -22,6 +23,14 @@ const Controller = (props)=>{
 
   const setTextSiza = (e)=>{
     props.setTextSiza(+e.target.value);
+  }
+
+  const setIconColor = (e)=>{
+    props.setIconColor(+e.target.value);
+  }
+
+  const setDpIconColor = (e)=>{
+    props.setDpIconColor(+e.target.value);
   }
 
   const listExpansion = (id)=>{
@@ -103,6 +112,30 @@ const Controller = (props)=>{
                     </>)
                   }
                 })
+                if(movedData.length > 0){
+                  result.push(
+                    <li className="flex_row">
+                      <div className="form-select" title='移動アイコン色'>
+                        <label htmlFor="IconColorSelect">移動アイコン色</label>
+                        <select id="IconColorSelect" value={iconColor} onChange={setIconColor} className="harmovis_select">
+                        {colorPallet.map((col,idx)=><option value={idx} key={idx}>{col[1]}</option>)}
+                        </select>
+                      </div>
+                    </li>
+                  )
+                }
+                if(depotsData.length > 0){
+                  result.push(
+                    <li className="flex_row">
+                      <div className="form-select" title='固定アイコン色'>
+                        <label htmlFor="DpIconColorSelect">固定アイコン色</label>
+                        <select id="DpIconColorSelect" value={dpIconColor} onChange={setDpIconColor} className="harmovis_select">
+                        {colorPallet.map((col,idx)=><option value={idx} key={idx}>{col[1]}</option>)}
+                        </select>
+                      </div>
+                    </li>
+                  )
+                }
                 if(orbitViewSw){
                   result.push(<>
                     <li className="flex_row">
