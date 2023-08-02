@@ -231,18 +231,18 @@ const App = (props)=>{
     orbitViewScale, setOrbitViewScale, getMoveOptionChecked, getMoveOptionArcChecked, getMoveOptionLineChecked,
     getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked, getIconCubeTypeSelected,
   }
-
-  return (
-    <Container {...props}>
-      <Controller {...controllerProps} />
-      <div className="harmovis_area">
-        {!orbitViewSw ?
-          <HarmoVisLayers {...harmoVisLayersProps} />:
-          <DeckGL views={new OrbitView({orbitAxis: 'Z', fov: 50})}
-            viewState={viewState} controller={{scrollZoom:{smooth:true}}}
-            onViewStateChange={v => updateViewState(v.viewState)}
-            layers={getLayer()} />}
-      </div>
+  const deckgLProps = {views:new OrbitView({orbitAxis: 'Z', fov: 50}), viewState, controller:{scrollZoom:{smooth:true}},
+    onViewStateChange:v => updateViewState(v.viewState), layers:getLayer()
+  }
+  const baseLayers = ()=>{
+    if(!orbitViewSw){
+      return(<HarmoVisLayers {...harmoVisLayersProps} />)
+    }else{
+      return(<DeckGL {...deckgLProps} />)
+    }
+  }
+  const popupsvg = ()=>{
+    return(
       <svg width={viewport.width} height={viewport.height} className="harmovis_overlay">
         <g fill="white" fontSize="12">
           {popup[2].length > 0 ?
@@ -254,6 +254,16 @@ const App = (props)=>{
           }
         </g>
       </svg>
+    )
+  }
+
+  return (
+    <Container {...props}>
+      <Controller {...controllerProps} />
+      <div className="harmovis_area">
+        {baseLayers()}
+      </div>
+      {popupsvg()}
       <LoadingIcon loading={loading} />
     </Container>
   );
