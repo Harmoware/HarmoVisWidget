@@ -11,7 +11,6 @@ const Controller = (props)=>{
   const { settime, timeBegin, timeLength, actions, multiplySpeed, animatePause, animateReverse, leading, movedData, depotsData,
     getMoveOptionChecked, getMoveOptionArcChecked, getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked,
     getIconCubeTypeSelected, getMoveOptionLineChecked, status, pointSiza, textSiza, iconColor, dpIconColor, orbitViewScale, widgetParam } = props;
-  const {orbitViewSw=false} = widgetParam
 
   const setOrbitViewScale = (e)=>{
     props.setOrbitViewScale(+e.target.checked);
@@ -38,6 +37,156 @@ const Controller = (props)=>{
     obj.display=(obj.display==='none')?'block':'none';
   }
 
+  const {orbitViewSw=false} = widgetParam
+  let {movesLayer:movesLayers, depotsLayer:depotsLayers} = widgetParam
+
+  if(movesLayers === undefined){
+    movesLayers = ["MovesLayer"]
+  }
+  if(!Array.isArray(movesLayers)){
+    movesLayers = [movesLayers]
+  }
+  const movesset = new Set(movesLayers);
+  movesLayers = [...movesset];
+
+  if(depotsLayers === undefined){
+    depotsLayers = ["DepotsLayer"]
+  }
+  if(!Array.isArray(depotsLayers)){
+    depotsLayers = [depotsLayers]
+  }
+  const depotsset = new Set(depotsLayers);
+  depotsLayers = [...depotsset];
+
+  const IconSelect = ()=>{
+    if(!orbitViewSw&&((movesLayers.includes("MovesLayer")&&movedData.length > 0)||(depotsLayers.includes("DepotsLayer")&&depotsData.length > 0))){
+      return(<>
+        <li className="flex_row">
+          <Checkbox id="IconChangeChecked" onChange={getIconChangeChecked} title='アイコン表示パターン切替' checked={status.iconChange} />
+        </li>
+        <li className="flex_row">
+          <div className="form-select" title='３Ｄアイコン表示タイプ切替'>
+            <label htmlFor="IconCubeTypeSelect">３Ｄアイコン表示タイプ切替</label>
+            <select id="IconCubeTypeSelect" value={status.iconCubeType} onChange={getIconCubeTypeSelected} className="harmovis_select">
+            <option value="0">SimpleMeshLayer</option>
+            <option value="1">ScenegraphLayer</option>
+            </select>
+          </div>
+        </li>
+      </>)
+    }
+    return(<></>)
+  }
+
+  const MoveIconOption = ()=>{
+    if(!orbitViewSw&&(movesLayers.includes("MovesLayer")&&movedData.length > 0)){
+      return(<>
+        <li className="flex_row">
+          <Checkbox id="MoveOptionChecked" onChange={getMoveOptionChecked} title='運行データグラフ表示' checked={status.moveOptionVisible} />
+        </li>
+        <li className="flex_row">
+          <Checkbox id="MoveOptionArcChecked" onChange={getMoveOptionArcChecked} title='運行データアーチ表示' checked={status.moveOptionArcVisible} />
+        </li>
+        <li className="flex_row">
+          <Checkbox id="MoveOptionLineChecked" onChange={getMoveOptionLineChecked} title='運行データライン表示' checked={status.moveOptionLineVisible} />
+        </li>
+      </>)
+    }
+    return(<></>)
+  }
+
+  const DepotIconOption = ()=>{
+    if(!orbitViewSw&&(depotsLayers.includes("DepotsLayer")&&depotsData.length > 0)){
+      return(
+        <li className="flex_row">
+          <Checkbox id="DepotOptionChecked" onChange={getDepotOptionChecked} title='停留所データオプション表示' checked={status.depotOptionVisible} />
+        </li>
+      )
+    }
+    return(<></>)
+  }
+
+  const IconOption = ()=>{
+    if(!orbitViewSw&&((movesLayers.includes("MovesLayer")&&movedData.length > 0)||(depotsLayers.includes("DepotsLayer")&&depotsData.length > 0))){
+      return(
+        <li className="flex_row">
+          <Checkbox id="OptionChangeChecked" onChange={getOptionChangeChecked} title='オプション表示パターン切替' checked={status.optionChange} />
+        </li>
+      )
+    }
+    return(<></>)
+  }
+
+  const PointSize = ()=>{
+    if(movesLayers.includes("PointCloudLayer")&&movedData.length > 0){
+      return(
+        <li className="flex_column">
+        <label htmlFor="setPointSiza">{`ポイントサイズ=${pointSiza}`}</label>
+          <input type="range" value={pointSiza} min={0} max={10} step={0.1} onChange={setPointSiza}
+            className='harmovis_input_range' id='setPointSiza' title={pointSiza}/>
+        </li>
+      )
+    }
+    return(<></>)
+  }
+
+  const TextSize = ()=>{
+    if(movesLayers.includes("TextLayer")&&movedData.length > 0){
+      return(
+        <li className="flex_column">
+        <label htmlFor="setTextSiza">{`テキストサイズ=${textSiza}`}</label>
+          <input type="range" value={textSiza} min={0} max={10} step={0.1} onChange={setTextSiza}
+            className='harmovis_input_range' id='setTextSiza' title={textSiza}/>
+        </li>
+      )
+    }
+    return(<></>)
+  }
+
+  const MovedIconColor = ()=>{
+    if(movesLayers.length > 0 && movedData.length > 0){
+      return(
+        <li className="flex_row">
+          <div className="form-select" title='移動アイコン色'>
+            <label htmlFor="IconColorSelect">移動アイコン色</label>
+            <select id="IconColorSelect" value={iconColor} onChange={setIconColor} className="harmovis_select">
+            {colorPallet.map((col,idx)=><option value={idx} key={idx}>{col[1]}</option>)}
+            </select>
+          </div>
+        </li>
+      )
+    }
+    return(<></>)
+  }
+
+  const DepotIconColor = ()=>{
+    if(!orbitViewSw&&(depotsLayers.includes("DepotsLayer")&&depotsData.length > 0)){
+      return(
+        <li className="flex_row">
+          <div className="form-select" title='固定アイコン色'>
+            <label htmlFor="DpIconColorSelect">固定アイコン色</label>
+            <select id="DpIconColorSelect" value={dpIconColor} onChange={setDpIconColor} className="harmovis_select">
+            {colorPallet.map((col,idx)=><option value={idx} key={idx}>{col[1]}</option>)}
+            </select>
+          </div>
+        </li>
+      )
+    }
+    return(<></>)
+  }
+
+  const OrbitViewScale = ()=>{
+    if(orbitViewSw){
+      return(
+        <li className="flex_row">
+          <Checkbox id="OptionChangeChecked" onChange={setOrbitViewScale} title='基準線表示' checked={orbitViewScale} />
+        </li>
+      )
+    }
+    return(<></>)
+  }
+    
+
   return (
     <div className="harmovis_controller">
       <ul>
@@ -49,101 +198,15 @@ const Controller = (props)=>{
           ,[])}
           <ul>
             <span id="expand1" style={{'display': 'none','clear': 'both'}}>
-              {(()=>{
-                let {movesLayer:movesLayers} = widgetParam
-                if(!movesLayers){
-                  movesLayers = ["MovesLayer"]
-                }
-                if(!Array.isArray(movesLayers)){
-                  movesLayers = [movesLayers]
-                }
-                const set = new Set(movesLayers);
-                movesLayers = [...set];
-                const result = movesLayers.map((movesLayer)=>{
-                  if((movesLayer === "MovesLayer") && !orbitViewSw){
-                    return(<>
-                      <li className="flex_row">
-                        <Checkbox id="IconChangeChecked" onChange={getIconChangeChecked} title='アイコン表示パターン切替' checked={status.iconChange} />
-                      </li>
-                      {React.useMemo(()=>
-                        <li className="flex_row">
-                          <div className="form-select" title='３Ｄアイコン表示タイプ切替'>
-                            <label htmlFor="IconCubeTypeSelect">３Ｄアイコン表示タイプ切替</label>
-                            <select id="IconCubeTypeSelect" value={status.iconCubeType} onChange={getIconCubeTypeSelected} className="harmovis_select">
-                            <option value="0">SimpleMeshLayer</option>
-                            <option value="1">ScenegraphLayer</option>
-                            </select>
-                          </div>
-                        </li>
-                      ,[status.iconCubeType])}
-                      <li className="flex_row">
-                        <Checkbox id="MoveOptionChecked" onChange={getMoveOptionChecked} title='運行データグラフ表示' checked={status.moveOptionVisible} />
-                      </li>
-                      <li className="flex_row">
-                        <Checkbox id="MoveOptionArcChecked" onChange={getMoveOptionArcChecked} title='運行データアーチ表示' checked={status.moveOptionArcVisible} />
-                      </li>
-                      <li className="flex_row">
-                        <Checkbox id="MoveOptionLineChecked" onChange={getMoveOptionLineChecked} title='運行データライン表示' checked={status.moveOptionLineVisible} />
-                      </li>
-                      <li className="flex_row">
-                        <Checkbox id="DepotOptionChecked" onChange={getDepotOptionChecked} title='停留所データオプション表示' checked={status.depotOptionVisible} />
-                      </li>
-                      <li className="flex_row">
-                        <Checkbox id="OptionChangeChecked" onChange={getOptionChangeChecked} title='オプション表示パターン切替' checked={status.optionChange} />
-                      </li>
-                    </>)
-                  }
-                  if(movesLayer === "PointCloudLayer"){
-                    return(<>
-                      <li className="flex_column">
-                      <label htmlFor="setPointSiza">{`ポイントサイズ=${pointSiza}`}</label>
-                        <input type="range" value={pointSiza} min={0} max={10} step={0.1} onChange={setPointSiza}
-                          className='harmovis_input_range' id='setPointSiza' title={pointSiza}/>
-                      </li>
-                    </>)
-                  }
-                  if(movesLayer === "TextLayer"){
-                    return(<>
-                      <li className="flex_column">
-                      <label htmlFor="setTextSiza">{`テキストサイズ=${textSiza}`}</label>
-                        <input type="range" value={textSiza} min={0} max={10} step={0.1} onChange={setTextSiza}
-                          className='harmovis_input_range' id='setTextSiza' title={textSiza}/>
-                      </li>
-                    </>)
-                  }
-                })
-                if(movedData.length > 0){
-                  result.push(
-                    <li className="flex_row">
-                      <div className="form-select" title='移動アイコン色'>
-                        <label htmlFor="IconColorSelect">移動アイコン色</label>
-                        <select id="IconColorSelect" value={iconColor} onChange={setIconColor} className="harmovis_select">
-                        {colorPallet.map((col,idx)=><option value={idx} key={idx}>{col[1]}</option>)}
-                        </select>
-                      </div>
-                    </li>
-                  )
-                }
-                if(depotsData.length > 0){
-                  result.push(
-                    <li className="flex_row">
-                      <div className="form-select" title='固定アイコン色'>
-                        <label htmlFor="DpIconColorSelect">固定アイコン色</label>
-                        <select id="DpIconColorSelect" value={dpIconColor} onChange={setDpIconColor} className="harmovis_select">
-                        {colorPallet.map((col,idx)=><option value={idx} key={idx}>{col[1]}</option>)}
-                        </select>
-                      </div>
-                    </li>
-                  )
-                }
-                if(orbitViewSw){
-                  result.push(<>
-                    <li className="flex_row">
-                      <Checkbox id="OptionChangeChecked" onChange={setOrbitViewScale} title='基準線表示' checked={orbitViewScale} />
-                    </li></>)
-                }
-                return result
-              })()}
+              {IconSelect()}
+              {MoveIconOption()}
+              {DepotIconOption()}
+              {IconOption()}
+              {PointSize()}
+              {TextSize()}
+              {MovedIconColor()}
+              {DepotIconColor()}
+              {OrbitViewScale()}
             </span>
           </ul>
         </li>
