@@ -145,19 +145,28 @@ const App = (props)=>{
     setState({ ...state, iconCubeType: +e.target.value });
   }
 
+  let {movesLayer:movesLayers, depotsLayer:depotsLayers} = widgetParam
+
+  if(movesLayers === undefined){
+    movesLayers = ["MovesLayer"]
+  }
+  if(!Array.isArray(movesLayers)){
+    movesLayers = [movesLayers]
+  }
+  movesLayers = [...new Set(movesLayers)];
+
+  if(depotsLayers === undefined){
+    depotsLayers = ["DepotsLayer"]
+  }
+  if(!Array.isArray(depotsLayers)){
+    depotsLayers = [depotsLayers]
+  }
+  depotsLayers = [...new Set(depotsLayers)];
+
   const getLayer = ()=>{
     const sizeScale = orbitViewSw ? 1:React.useMemo(()=>(Math.max(17 - viewport.zoom,2)**2)*2,[viewport.zoom]);
     const returnLayer = []
     if(movedData.length > 0){
-      let {movesLayer:movesLayers} = widgetParam
-      if(!movesLayers){
-        movesLayers = ["MovesLayer"]
-      }
-      if(!Array.isArray(movesLayers)){
-        movesLayers = [movesLayers]
-      }
-      const set = new Set(movesLayers);
-      movesLayers = [...set];
       for(const movesLayer of movesLayers){
         if((movesLayer === "MovesLayer") && !orbitViewSw){
           const iconlayer = (!state.iconChange ? 'Scatterplot':
@@ -189,15 +198,6 @@ const App = (props)=>{
     }
     if(depotsData.length > 0 && !orbitViewSw){
       const iconlayer = (!state.iconChange ? 'Scatterplot':'SimpleMesh');
-      let {depotsLayer:depotsLayers} = widgetParam
-      if(!depotsLayers){
-        depotsLayers = ["DepotsLayer"]
-      }
-      if(!Array.isArray(depotsLayers)){
-        depotsLayers = [depotsLayers]
-      }
-      const set = new Set(depotsLayers);
-      depotsLayers = [...set];
       for(const depotsLayer of depotsLayers){
         if(depotsLayer === "DepotsLayer"){
           returnLayer.push(new DepotsLayer({ depotsData, onHover,
@@ -226,7 +226,7 @@ const App = (props)=>{
   }
 
   const harmoVisLayersProps = {viewport,actions,mapboxApiAccessToken:widgetParam.mapboxApiKey,layers:getLayer()}
-  const controllerProps = {...props, status:state,
+  const controllerProps = {...props, status:state, movesLayers, depotsLayers,
     pointSiza, setPointSiza, textSiza, setTextSiza, iconColor, setIconColor, dpIconColor, setDpIconColor,
     orbitViewScale, setOrbitViewScale, getMoveOptionChecked, getMoveOptionArcChecked, getMoveOptionLineChecked,
     getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked, getIconCubeTypeSelected,

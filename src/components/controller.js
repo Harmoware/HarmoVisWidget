@@ -10,7 +10,8 @@ const Checkbox = React.memo(({id,onChange,title,className='harmovis_input_checkb
 const Controller = (props)=>{
   const { settime, timeBegin, timeLength, actions, multiplySpeed, animatePause, animateReverse, leading, movedData, depotsData,
     getMoveOptionChecked, getMoveOptionArcChecked, getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked,
-    getIconCubeTypeSelected, getMoveOptionLineChecked, status, pointSiza, textSiza, iconColor, dpIconColor, orbitViewScale, widgetParam } = props;
+    getIconCubeTypeSelected, getMoveOptionLineChecked, status, pointSiza, textSiza, iconColor, dpIconColor, orbitViewScale,
+    movesLayers, depotsLayers, widgetParam:{orbitViewSw=false} } = props;
 
   const setOrbitViewScale = (e)=>{
     props.setOrbitViewScale(+e.target.checked);
@@ -36,27 +37,6 @@ const Controller = (props)=>{
     let obj=document.getElementById(id).style;
     obj.display=(obj.display==='none')?'block':'none';
   }
-
-  const {orbitViewSw=false} = widgetParam
-  let {movesLayer:movesLayers, depotsLayer:depotsLayers} = widgetParam
-
-  if(movesLayers === undefined){
-    movesLayers = ["MovesLayer"]
-  }
-  if(!Array.isArray(movesLayers)){
-    movesLayers = [movesLayers]
-  }
-  const movesset = new Set(movesLayers);
-  movesLayers = [...movesset];
-
-  if(depotsLayers === undefined){
-    depotsLayers = ["DepotsLayer"]
-  }
-  if(!Array.isArray(depotsLayers)){
-    depotsLayers = [depotsLayers]
-  }
-  const depotsset = new Set(depotsLayers);
-  depotsLayers = [...depotsset];
 
   const IconSelect = ()=>{
     if(!orbitViewSw&&((movesLayers.includes("MovesLayer")&&movedData.length > 0)||(depotsLayers.includes("DepotsLayer")&&depotsData.length > 0))){
@@ -185,7 +165,6 @@ const Controller = (props)=>{
     }
     return(<></>)
   }
-    
 
   return (
     <div className="harmovis_controller">
