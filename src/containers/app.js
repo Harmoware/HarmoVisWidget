@@ -225,14 +225,23 @@ const App = (props)=>{
     return returnLayer
   }
 
-  const harmoVisLayersProps = {viewport,actions,mapboxApiAccessToken:widgetParam.mapboxApiKey,layers:getLayer()}
+  const getMapStyle = ()=>{
+    if(widgetParam.mapboxApiKey === ""){
+      return {mapStyle:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'}
+    }else{
+      return {mapboxApiAccessToken:widgetParam.mapboxApiKey}
+    }
+  }
+  const harmoVisLayersProps = {
+    ...getMapStyle(),viewport,actions,layers:getLayer()
+  }
+  const deckgLProps = {views:new OrbitView({orbitAxis: 'Z', fov: 50}), viewState, controller:{scrollZoom:{smooth:true}},
+    onViewStateChange:v => updateViewState(v.viewState), layers:getLayer()
+  }
   const controllerProps = {...props, status:state, movesLayers, depotsLayers,
     pointSiza, setPointSiza, textSiza, setTextSiza, iconColor, setIconColor, dpIconColor, setDpIconColor,
     orbitViewScale, setOrbitViewScale, getMoveOptionChecked, getMoveOptionArcChecked, getMoveOptionLineChecked,
     getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked, getIconCubeTypeSelected,
-  }
-  const deckgLProps = {views:new OrbitView({orbitAxis: 'Z', fov: 50}), viewState, controller:{scrollZoom:{smooth:true}},
-    onViewStateChange:v => updateViewState(v.viewState), layers:getLayer()
   }
   const baseLayers = ()=>{
     if(!orbitViewSw){
