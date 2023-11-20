@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DeckGL from '@deck.gl/react';
-import { PointCloudLayer, TextLayer, LineLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
+import { PointCloudLayer, TextLayer, PolygonLayer, LineLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
 import {
   Container, connectToHarmowareVis, HarmoVisLayers, MovesLayer, DepotsLayer, LoadingIcon
 } from 'harmoware-vis';
@@ -43,6 +43,9 @@ const App = (props)=>{
   const [orbitViewScale, setOrbitViewScale] = useState(true);
   const [iconColor, setIconColor] = useState(0);
   const [dpIconColor, setDpIconColor] = useState(0);
+  const [heatmapArea,setHeatmapArea] = useState(1);
+  const [heatmapColor,setHeatmapColor] = useState([[255,237,209,255],[248,203,98,255],[246,163,52,255],[232,93,38,255],[207,62,55,255]]);
+  const [heatmapMaxValue,setHeatmapMaxValue] = useState(0)
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, widgetParam } = props;
@@ -98,8 +101,38 @@ const App = (props)=>{
   },[widgetParam.depotsBase])
 
   React.useEffect(()=>{
+    const findIdx = widgetParam.movesLayer.findIndex((x)=>x === "Heatmap3dLayer")
+    if(findIdx >= 0){
+      const assignProps = widgetParam.movesLayer[findIdx+1]
+      const {heatmapArea,heatmapColor,heatmapMaxValue} = JSON.parse(assignProps)
+      if(heatmapArea !== undefined && !isNaN(heatmapArea)){
+        setHeatmapArea(heatmapArea)
+      }
+      if(heatmapColor !== undefined && Array.isArray(heatmapColor)){
+        setHeatmapColor(heatmapColor)
+      }
+      if(heatmapMaxValue !== undefined && !isNaN(heatmapMaxValue)){
+        setHeatmapMaxValue(heatmapMaxValue)
+      }else{
+        setHeatmapMaxValue(0)
+      }
+    }
+  },[widgetParam.movesLayer])
+
+  React.useEffect(()=>{
     depotsData.reverse()
   },[dpIconColor])
+
+  const distance_rate = [0.0110910, 0.0090123]  //初期値は北緯37度での係数（度/km）
+  React.useEffect(()=>{
+    const R = Math.PI / 180;
+    const long1 = viewport.longitude*R
+    const long2 = (viewport.longitude+1)*R
+    const lati1 = viewport.latitude*R
+    const lati2 = (viewport.latitude+1)*R
+    distance_rate[0] = 1/(6371 * Math.acos(Math.cos(lati1) * Math.cos(lati1) * Math.cos(long2 - long1) + Math.sin(lati1) * Math.sin(lati1)))
+    distance_rate[1] = 1/(6371 * Math.acos(Math.cos(lati1) * Math.cos(lati2) * Math.cos(long1 - long1) + Math.sin(lati1) * Math.sin(lati2)))
+  },[movesbase])
 
   const arrStrConv = (value)=>Array.isArray(value)?`[${value.map(el=>arrStrConv(el))}]`:value.toString()
   const onHover = (el)=>{
@@ -148,61 +181,104 @@ const App = (props)=>{
   let {movesLayer:movesLayers, depotsLayer:depotsLayers} = widgetParam
 
   if(movesLayers === undefined){
-    movesLayers = ["MovesLayer"]
+    movesLayers = ["",{}]
   }
-  if(!Array.isArray(movesLayers)){
-    movesLayers = [movesLayers]
-  }
-  movesLayers = [...new Set(movesLayers)];
 
   if(depotsLayers === undefined){
-    depotsLayers = ["DepotsLayer"]
+    depotsLayers = ["",{}]
   }
-  if(!Array.isArray(depotsLayers)){
-    depotsLayers = [depotsLayers]
-  }
-  depotsLayers = [...new Set(depotsLayers)];
 
   const getLayer = ()=>{
     const sizeScale = orbitViewSw ? 1:React.useMemo(()=>(Math.max(17 - viewport.zoom,2)**2)*2,[viewport.zoom]);
     const returnLayer = []
     if(movedData.length > 0){
-      for(const movesLayer of movesLayers){
+      for(let i=0; i<movesLayers.length; i=i+1){
+        const movesLayer = movesLayers[i]
+        if(movesLayer === "TextLayer"){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          returnLayer.push(new TextLayer({ id: 'TextLayer', data: movedData,
+              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+              getPosition: x => x.position, getText: x => x.text, getColor: x => x.textColor || [255,255,255,255],
+              sizeUnits: orbitViewSw ? undefined:"meters",
+              getSize: textSiza*(orbitViewSw ? 1:10), getTextAnchor: 'start', characterSet: 'auto', pickable: true, onHover,
+              ...assignProps
+            })
+          )
+        }else
         if((movesLayer === "MovesLayer") && !orbitViewSw){
+          const assignProps = JSON.parse(movesLayers[i+1])
           const iconlayer = (!state.iconChange ? 'Scatterplot':
             state.iconCubeType === 0 ? 'SimpleMesh':state.iconCubeType === 1 ? 'Scenegraph':'Scatterplot');
           returnLayer.push(new MovesLayer({ routePaths, movesbase, movedData, clickedObject, actions, onHover,
             optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
             optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconlayer,
             sizeScale: (iconlayer === 'SimpleMesh' ? sizeScale : (sizeScale/10)),
-            iconDesignations:[{layer:iconlayer,getColor:x=>colorPallet[iconColor][0]||x.color||[0,255,0]}]
+            iconDesignations:[{layer:iconlayer,getColor:x=>colorPallet[iconColor][0]||x.color||[0,255,0]}],
+            ...assignProps
           }))
         }else
         if(movesLayer === "PointCloudLayer"){
+          const assignProps = JSON.parse(movesLayers[i+1])
           returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
               getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x.color||[0,255,0],
-              pointSize: pointSiza, pickable: true, onHover
+              pointSize: pointSiza, pickable: true, onHover,
+              ...assignProps
             })
           )
         }else
-        if(movesLayer === "TextLayer"){
-          returnLayer.push(new TextLayer({ id: 'TextLayer', data: movedData,
-              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getText: x => x.text, getColor: x => x.textColor || [255,255,255,255],
-              getSize: textSiza, getTextAnchor: 'start', characterSet: 'auto', pickable: true, onHover
-            })
+        if((movesLayer === "Heatmap3dLayer") && !orbitViewSw){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          const heatmapData = movedData.reduce((heatmapData,x)=>{
+            if(x.position){
+              const heatmapArea_long = heatmapArea * distance_rate[0]
+              const heatmapArea_lati = heatmapArea * distance_rate[1]
+              const Grid_longitude = Math.floor(x.position[0]/heatmapArea_long)*heatmapArea_long
+              const Grid_latitude = Math.floor(x.position[1]/heatmapArea_lati)*heatmapArea_lati
+              const findIdx = heatmapData.findIndex((x)=>(x.Grid_longitude === Grid_longitude && x.Grid_latitude === Grid_latitude))
+              if(findIdx < 0){
+                heatmapData.push({
+                  Grid_longitude, Grid_latitude, elevation:1,
+                  coordinates:[
+                    [Grid_longitude, Grid_latitude],[Grid_longitude+heatmapArea_long, Grid_latitude],
+                    [Grid_longitude+heatmapArea_long, Grid_latitude+heatmapArea_lati],
+                    [Grid_longitude, Grid_latitude+heatmapArea_lati]
+                  ]
+                })
+              }else{
+                heatmapData[findIdx].elevation = heatmapData[findIdx].elevation + 1
+              }
+            }
+            return heatmapData
+          },[])
+          const maxValue = Math.max(heatmapColor.length,heatmapMaxValue,
+            heatmapData.reduce((heatmapMaxValue,x)=>Math.max(heatmapMaxValue,x.elevation),0)
           )
+          const maxidx = heatmapColor.length - 1
+          const denominator = (maxValue/heatmapColor.length)
+        
+          returnLayer.push(new PolygonLayer({ id: 'Heatmap3dLayer', data: heatmapData,
+              extruded: true, wireframe: false,
+              getPolygon: (x) => x.coordinates,
+              getFillColor: (x) => heatmapColor[Math.min(maxidx,Math.floor((x.elevation-1)/denominator))],
+              getLineColor: null,
+              getElevation: (x) => x.elevation || 0, elevationScale: 100,
+              opacity: 0.5, pickable: true, onHover,
+              ...assignProps
+          }))
         }
       }      
     }
     if(depotsData.length > 0 && !orbitViewSw){
       const iconlayer = (!state.iconChange ? 'Scatterplot':'SimpleMesh');
-      for(const depotsLayer of depotsLayers){
+      for(let i=0; i<depotsLayers.length; i=i+1){
+        const depotsLayer = depotsLayers[i]
         if(depotsLayer === "DepotsLayer"){
+          const assignProps = JSON.parse(depotsLayers[i+1])
           returnLayer.push(new DepotsLayer({ depotsData, onHover,
             optionVisible: state.depotOptionVisible, optionChange: state.optionChange, iconlayer,
-            iconDesignations:[{layer:iconlayer, getColor:x=>colorPallet[dpIconColor][0]||x.color||[166,89,166]}]
+            iconDesignations:[{layer:iconlayer, getColor:x=>colorPallet[dpIconColor][0]||x.color||[166,89,166]}],
+            ...assignProps
           }))
         }
       }
@@ -227,7 +303,10 @@ const App = (props)=>{
 
   const getMapStyle = ()=>{
     if(widgetParam.mapboxApiKey === ""){
-      return {mapStyle:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'}
+      return {
+        mapStyle:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        mapboxAddLayerValue:null
+      }
     }else{
       return {mapboxApiAccessToken:widgetParam.mapboxApiKey}
     }
