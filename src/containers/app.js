@@ -46,6 +46,7 @@ const App = (props)=>{
   const [heatmapArea,setHeatmapArea] = useState(1);
   const [heatmapColor,setHeatmapColor] = useState([[255,237,209,255],[248,203,98,255],[246,163,52,255],[232,93,38,255],[207,62,55,255]]);
   const [heatmapMaxValue,setHeatmapMaxValue] = useState(0)
+  const [elevationStr,setElevationStr] = useState("elevation")
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, widgetParam } = props;
@@ -104,7 +105,7 @@ const App = (props)=>{
     const findIdx = widgetParam.movesLayer.findIndex((x)=>x === "Heatmap3dLayer")
     if(findIdx >= 0){
       const assignProps = widgetParam.movesLayer[findIdx+1]
-      const {heatmapArea,heatmapColor,heatmapMaxValue} = JSON.parse(assignProps)
+      const {heatmapArea,heatmapColor,heatmapMaxValue,elevationStr} = JSON.parse(assignProps)
       if(heatmapArea !== undefined && !isNaN(heatmapArea)){
         setHeatmapArea(heatmapArea)
       }
@@ -115,6 +116,9 @@ const App = (props)=>{
         setHeatmapMaxValue(heatmapMaxValue)
       }else{
         setHeatmapMaxValue(0)
+      }
+      if(elevationStr !== undefined && isNaN(elevationStr)){
+        setElevationStr(elevationStr)
       }
     }
   },[widgetParam.movesLayer])
@@ -230,6 +234,7 @@ const App = (props)=>{
         if((movesLayer === "Heatmap3dLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
           const heatmapData = movedData.reduce((heatmapData,x)=>{
+            const elevation = x[elevationStr]===undefined ? 1 : x[elevationStr]
             if(x.position){
               const heatmapArea_long = heatmapArea * distance_rate[0]
               const heatmapArea_lati = heatmapArea * distance_rate[1]
@@ -238,7 +243,7 @@ const App = (props)=>{
               const findIdx = heatmapData.findIndex((x)=>(x.Grid_longitude === Grid_longitude && x.Grid_latitude === Grid_latitude))
               if(findIdx < 0){
                 heatmapData.push({
-                  Grid_longitude, Grid_latitude, elevation:1,
+                  Grid_longitude, Grid_latitude, elevation,
                   coordinates:[
                     [Grid_longitude, Grid_latitude],[Grid_longitude+heatmapArea_long, Grid_latitude],
                     [Grid_longitude+heatmapArea_long, Grid_latitude+heatmapArea_lati],
@@ -246,7 +251,7 @@ const App = (props)=>{
                   ]
                 })
               }else{
-                heatmapData[findIdx].elevation = heatmapData[findIdx].elevation + 1
+                heatmapData[findIdx].elevation = heatmapData[findIdx].elevation + elevation
               }
             }
             return heatmapData
@@ -320,7 +325,7 @@ const App = (props)=>{
   const controllerProps = {...props, status:state, movesLayers, depotsLayers,
     pointSiza, setPointSiza, textSiza, setTextSiza, iconColor, setIconColor, dpIconColor, setDpIconColor,
     orbitViewScale, setOrbitViewScale, getMoveOptionChecked, getMoveOptionArcChecked, getMoveOptionLineChecked,
-    getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked, getIconCubeTypeSelected,
+    getDepotOptionChecked, getOptionChangeChecked, getIconChangeChecked, getIconCubeTypeSelected, heatmapColor,
   }
   const baseLayers = ()=>{
     if(!orbitViewSw){

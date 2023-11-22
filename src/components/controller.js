@@ -2,6 +2,7 @@ import * as React from 'react';
 import { AddMinutesButton, PlayButton, PauseButton, ReverseButton, ForwardButton, ElapsedTimeRange, ElapsedTimeValue,
   SpeedRange, SpeedValue, SimulationDateTime } from 'harmoware-vis';
 import {colorPallet} from '../containers/app'
+import CanvasComponent from './canvas'
  
 const Checkbox = React.memo(({id,onChange,title,className='harmovis_input_checkbox',checked})=>
   <><input type="checkbox" id={id} onChange={onChange} className={className} checked={checked} />
@@ -124,7 +125,7 @@ const Controller = (props)=>{
   }
 
   const MovedIconColor = ()=>{
-    if(movesLayers.length > 0 && movedData.length > 0){
+    if((movesLayers.includes("MovesLayer")||movesLayers.includes("PointCloudLayer"))&&movedData.length > 0){
       return(
         <li className="flex_row">
           <div className="form-select" title='移動アイコン色'>
@@ -166,8 +167,21 @@ const Controller = (props)=>{
     return(<></>)
   }
 
+  const heatmapColorBar = ()=>{
+    if(!orbitViewSw&&(movesLayers.includes("Heatmap3dLayer")&&movedData.length > 0)){
+      const width = document.getElementById("harmovis_controller").clientWidth
+      return(
+        <li className="flex_column">
+          <label htmlFor="heatmapColor">カラースケール</label>
+          <CanvasComponent id="heatmapColor" width={width} heatmapColor={props.heatmapColor} />
+        </li>
+      )
+    }
+    return(<></>)
+  }
+
   return (
-    <div className="harmovis_controller">
+    <div className="harmovis_controller" id="harmovis_controller">
       <ul>
         <li className="flex_column">
           {React.useMemo(()=>
@@ -217,6 +231,7 @@ const Controller = (props)=>{
             <SpeedRange multiplySpeed={multiplySpeed} actions={actions} id="SpeedRange" />
           </li>
         ,[multiplySpeed])}
+        {heatmapColorBar()}
       </ul>
     </div>
   );
