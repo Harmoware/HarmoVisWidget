@@ -47,6 +47,9 @@ const App = (props)=>{
   const [heatmapColor,setHeatmapColor] = useState([[255,237,209,255],[248,203,98,255],[246,163,52,255],[232,93,38,255],[207,62,55,255]]);
   const [heatmapMaxValue,setHeatmapMaxValue] = useState(0)
   const [elevationStr,setElevationStr] = useState("elevation")
+  const [textStr,setTextStr] = useState("text")
+  const [textColorStr,setTextColor] = useState("textColor")
+  const [colorStr,setColorStr] = useState("color")
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, widgetParam } = props;
@@ -119,6 +122,25 @@ const App = (props)=>{
       }
       if(elevationStr !== undefined && isNaN(elevationStr)){
         setElevationStr(elevationStr)
+      }
+    }
+    const findIdx2 = widgetParam.movesLayer.findIndex((x)=>x === "TextLayer")
+    if(findIdx2 >= 0){
+      const assignProps = widgetParam.movesLayer[findIdx2+1]
+      const {textStr,textColorStr} = JSON.parse(assignProps)
+      if(textStr !== undefined && isNaN(textStr)){
+        setTextStr(textStr)
+      }
+      if(textColorStr !== undefined && isNaN(textColorStr)){
+        setTextColor(textColorStr)
+      }
+    }
+    const findIdx3 = widgetParam.movesLayer.findIndex((x)=>x === "MovesLayer" || x === "PointCloudLayer")
+    if(findIdx3 >= 0){
+      const assignProps = widgetParam.movesLayer[findIdx3+1]
+      const {colorStr} = JSON.parse(assignProps)
+      if(colorStr !== undefined && isNaN(colorStr)){
+        setColorStr(colorStr)
       }
     }
   },[widgetParam.movesLayer])
@@ -201,13 +223,12 @@ const App = (props)=>{
         if(movesLayer === "TextLayer"){
           const assignProps = JSON.parse(movesLayers[i+1])
           returnLayer.push(new TextLayer({ id: 'TextLayer', data: movedData,
-              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getText: x => x.text, getColor: x => x.textColor || [255,255,255,255],
-              sizeUnits: orbitViewSw ? undefined:"meters",
-              getSize: textSiza*(orbitViewSw ? 1:10), getTextAnchor: 'start', characterSet: 'auto', pickable: true, onHover,
-              ...assignProps
-            })
-          )
+            coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+            getPosition: x => x.position, getText: x => x[textStr] || "", getColor: x => x[textColorStr] || [255,255,255,255],
+            characterSet: 'auto', sizeUnits: orbitViewSw ? "pixels":"meters", getSize: (textSiza*(orbitViewSw ? 1:10)),
+            getTextAnchor: 'start', pickable: true, onHover,
+            ...assignProps
+          }))
         }else
         if((movesLayer === "MovesLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
@@ -217,7 +238,7 @@ const App = (props)=>{
             optionVisible: state.moveOptionVisible, optionArcVisible: state.moveOptionArcVisible,
             optionLineVisible: state.moveOptionLineVisible, optionChange: state.optionChange, iconlayer,
             sizeScale: (iconlayer === 'SimpleMesh' ? sizeScale : (sizeScale/10)),
-            iconDesignations:[{layer:iconlayer,getColor:x=>colorPallet[iconColor][0]||x.color||[0,255,0]}],
+            iconDesignations:[{layer:iconlayer,getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0]}],
             ...assignProps
           }))
         }else
@@ -225,7 +246,7 @@ const App = (props)=>{
           const assignProps = JSON.parse(movesLayers[i+1])
           returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x.color||[0,255,0],
+              getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
               pointSize: pointSiza, pickable: true, onHover,
               ...assignProps
             })
@@ -272,7 +293,7 @@ const App = (props)=>{
               ...assignProps
           }))
         }
-      }      
+      }
     }
     if(depotsData.length > 0 && !orbitViewSw){
       const iconlayer = (!state.iconChange ? 'Scatterplot':'SimpleMesh');
