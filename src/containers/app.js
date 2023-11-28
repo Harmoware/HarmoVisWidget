@@ -50,6 +50,7 @@ const App = (props)=>{
   const [textStr,setTextStr] = useState("text")
   const [textColorStr,setTextColor] = useState("textColor")
   const [colorStr,setColorStr] = useState("color")
+  const [distance_rate,setDistance_rate] = useState([0.0110910, 0.0090123])  //初期値は北緯37度での係数（度/km）
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, widgetParam } = props;
@@ -149,15 +150,16 @@ const App = (props)=>{
     depotsData.reverse()
   },[dpIconColor])
 
-  const distance_rate = [0.0110910, 0.0090123]  //初期値は北緯37度での係数（度/km）
   React.useEffect(()=>{
     const R = Math.PI / 180;
     const long1 = viewport.longitude*R
     const long2 = (viewport.longitude+1)*R
     const lati1 = viewport.latitude*R
     const lati2 = (viewport.latitude+1)*R
-    distance_rate[0] = 1/(6371 * Math.acos(Math.cos(lati1) * Math.cos(lati1) * Math.cos(long2 - long1) + Math.sin(lati1) * Math.sin(lati1)))
-    distance_rate[1] = 1/(6371 * Math.acos(Math.cos(lati1) * Math.cos(lati2) * Math.cos(long1 - long1) + Math.sin(lati1) * Math.sin(lati2)))
+    setDistance_rate([
+      1/(6371 * Math.acos(Math.cos(lati1) * Math.cos(lati1) * Math.cos(long2 - long1) + Math.sin(lati1) * Math.sin(lati1))),
+      1/(6371 * Math.acos(Math.cos(lati1) * Math.cos(lati2) * Math.cos(long1 - long1) + Math.sin(lati1) * Math.sin(lati2)))
+    ])
   },[movesbase])
 
   const arrStrConv = (value)=>Array.isArray(value)?`[${value.map(el=>arrStrConv(el))}]`:value.toString()
