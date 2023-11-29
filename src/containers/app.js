@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DeckGL from '@deck.gl/react';
-import { PointCloudLayer, TextLayer, PolygonLayer, LineLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
+import { PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
 import {
   Container, connectToHarmowareVis, HarmoVisLayers, MovesLayer, DepotsLayer, LoadingIcon
 } from 'harmoware-vis';
@@ -106,7 +106,7 @@ const App = (props)=>{
   },[widgetParam.depotsBase])
 
   React.useEffect(()=>{
-    const findIdx = widgetParam.movesLayer.findIndex((x)=>x === "Heatmap3dLayer")
+    let findIdx = widgetParam.movesLayer.findIndex((x)=>x === "Heatmap3dLayer")
     if(findIdx >= 0){
       const assignProps = widgetParam.movesLayer[findIdx+1]
       const {heatmapArea,heatmapColor,heatmapMaxValue,elevationStr} = JSON.parse(assignProps)
@@ -125,9 +125,20 @@ const App = (props)=>{
         setElevationStr(elevationStr)
       }
     }
-    const findIdx2 = widgetParam.movesLayer.findIndex((x)=>x === "TextLayer")
-    if(findIdx2 >= 0){
-      const assignProps = widgetParam.movesLayer[findIdx2+1]
+    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "Heatmap2dLayer")
+    if(findIdx >= 0){
+      const assignProps = widgetParam.movesLayer[findIdx+1]
+      const {heatmapColor,elevationStr} = JSON.parse(assignProps)
+      if(heatmapColor !== undefined && Array.isArray(heatmapColor)){
+        setHeatmapColor(heatmapColor)
+      }
+      if(elevationStr !== undefined && isNaN(elevationStr)){
+        setElevationStr(elevationStr)
+      }
+    }
+    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "TextLayer")
+    if(findIdx >= 0){
+      const assignProps = widgetParam.movesLayer[findIdx+1]
       const {textStr,textColorStr} = JSON.parse(assignProps)
       if(textStr !== undefined && isNaN(textStr)){
         setTextStr(textStr)
@@ -136,9 +147,9 @@ const App = (props)=>{
         setTextColor(textColorStr)
       }
     }
-    const findIdx3 = widgetParam.movesLayer.findIndex((x)=>x === "MovesLayer" || x === "PointCloudLayer")
-    if(findIdx3 >= 0){
-      const assignProps = widgetParam.movesLayer[findIdx3+1]
+    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "MovesLayer" || x === "PointCloudLayer")
+    if(findIdx >= 0){
+      const assignProps = widgetParam.movesLayer[findIdx+1]
       const {colorStr} = JSON.parse(assignProps)
       if(colorStr !== undefined && isNaN(colorStr)){
         setColorStr(colorStr)
@@ -292,6 +303,14 @@ const App = (props)=>{
               getLineColor: null,
               getElevation: (x) => x.elevation || 0, elevationScale: 100,
               opacity: 0.5, pickable: true, onHover,
+              ...assignProps
+          }))
+        }else
+        if((movesLayer === "Heatmap2dLayer") && !orbitViewSw){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          returnLayer.push(new HeatmapLayer({ id: 'Heatmap2dLayer', data: movedData,
+              getPosition: x => x.position, getWeight: x => x[elevationStr] || 1,
+              colorRange: heatmapColor, pickable: true, onHover,
               ...assignProps
           }))
         }

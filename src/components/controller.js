@@ -168,7 +168,7 @@ const Controller = (props)=>{
   }
 
   const heatmapColorBar = ()=>{
-    if(!orbitViewSw&&(movesLayers.includes("Heatmap3dLayer")&&movedData.length > 0)){
+    if(!orbitViewSw&&((movesLayers.includes("Heatmap3dLayer")||movesLayers.includes("Heatmap2dLayer"))&&movedData.length > 0)){
       const width = document.getElementById("harmovis_controller").clientWidth
       return(
         <li className="flex_column">
