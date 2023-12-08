@@ -44,7 +44,7 @@ const App = (props)=>{
   const [iconColor, setIconColor] = useState(0);
   const [dpIconColor, setDpIconColor] = useState(0);
   const [heatmapArea,setHeatmapArea] = useState(1);
-  const [heatmapColor,setHeatmapColor] = useState([[255,237,209,255],[248,203,98,255],[246,163,52,255],[232,93,38,255],[207,62,55,255]]);
+  const [heatmapColor,setHeatmapColor] = useState([[255,237,209],[248,203,98],[246,163,52],[232,93,38],[207,62,55]]);
   const [heatmapMaxValue,setHeatmapMaxValue] = useState(0)
   const [elevationStr,setElevationStr] = useState("elevation")
   const [textStr,setTextStr] = useState("text")
