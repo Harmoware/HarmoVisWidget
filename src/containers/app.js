@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DeckGL from '@deck.gl/react';
-import { PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
+import { PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
 import {
   Container, connectToHarmowareVis, HarmoVisLayers, MovesLayer, DepotsLayer, LoadingIcon
 } from 'harmoware-vis';
@@ -147,7 +147,7 @@ const App = (props)=>{
         setTextColor(textColorStr)
       }
     }
-    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "MovesLayer" || x === "PointCloudLayer")
+    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "MovesLayer" || x === "PointCloudLayer" || x === "ScatterplotLayer")
     if(findIdx >= 0){
       const assignProps = widgetParam.movesLayer[findIdx+1]
       const {colorStr} = JSON.parse(assignProps)
@@ -313,6 +313,16 @@ const App = (props)=>{
               colorRange: heatmapColor, pickable: true, onHover,
               ...assignProps
           }))
+        }else
+        if(movesLayer === "ScatterplotLayer"){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          returnLayer.push(new ScatterplotLayer({ id: 'ScatterplotLayer', data: movedData,
+              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+              getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+              getRadius: pointSiza, pickable: true, onHover, billboard: true, radiusUnits: orbitViewSw ? "pixels":"meters",
+              ...assignProps
+            })
+          )
         }
       }
     }

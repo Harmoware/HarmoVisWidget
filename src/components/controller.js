@@ -99,7 +99,7 @@ const Controller = (props)=>{
   }
 
   const PointSize = ()=>{
-    if(movesLayers.includes("PointCloudLayer")&&movedData.length > 0){
+    if((movesLayers.includes("PointCloudLayer")||movesLayers.includes("ScatterplotLayer"))&&movedData.length > 0){
       return(
         <li className="flex_column">
         <label htmlFor="setPointSiza">{`ポイントサイズ=${pointSiza}`}</label>
@@ -125,7 +125,7 @@ const Controller = (props)=>{
   }
 
   const MovedIconColor = ()=>{
-    if((movesLayers.includes("MovesLayer")||movesLayers.includes("PointCloudLayer"))&&movedData.length > 0){
+    if((movesLayers.includes("MovesLayer")||movesLayers.includes("PointCloudLayer")||movesLayers.includes("ScatterplotLayer"))&&movedData.length > 0){
       return(
         <li className="flex_row">
           <div className="form-select" title='移動アイコン色'>
