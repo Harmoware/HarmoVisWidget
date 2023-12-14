@@ -103,7 +103,7 @@ const Controller = (props)=>{
       return(
         <li className="flex_column">
         <label htmlFor="setPointSiza">{`ポイントサイズ=${pointSiza}`}</label>
-          <input type="range" value={pointSiza} min={0} max={10} step={0.1} onChange={setPointSiza}
+          <input type="range" value={pointSiza} min={0} max={orbitViewSw?10:100} step={0.1} onChange={setPointSiza}
             className='harmovis_input_range' id='setPointSiza' title={pointSiza}/>
         </li>
       )
