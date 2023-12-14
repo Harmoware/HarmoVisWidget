@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import DeckGL from '@deck.gl/react';
-import { PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer, COORDINATE_SYSTEM, OrbitView } from 'deck.gl';
+import {
+  PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer, GridCellLayer, COORDINATE_SYSTEM, OrbitView
+} from 'deck.gl';
 import {
   Container, connectToHarmowareVis, HarmoVisLayers, MovesLayer, DepotsLayer, LoadingIcon
 } from 'harmoware-vis';
@@ -151,6 +153,20 @@ const App = (props)=>{
     if(findIdx >= 0){
       const assignProps = widgetParam.movesLayer[findIdx+1]
       const {colorStr} = JSON.parse(assignProps)
+      if(colorStr !== undefined && isNaN(colorStr)){
+        setColorStr(colorStr)
+      }
+    }
+    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "GridCellLayer")
+    if(findIdx >= 0){
+      const assignProps = widgetParam.movesLayer[findIdx+1]
+      const {heatmapArea,elevationStr,colorStr} = JSON.parse(assignProps)
+      if(heatmapArea !== undefined && !isNaN(heatmapArea)){
+        setHeatmapArea(heatmapArea)
+      }
+      if(elevationStr !== undefined && isNaN(elevationStr)){
+        setElevationStr(elevationStr)
+      }
       if(colorStr !== undefined && isNaN(colorStr)){
         setColorStr(colorStr)
       }
@@ -320,6 +336,17 @@ const App = (props)=>{
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
               getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
               getRadius: pointSiza, pickable: true, onHover, billboard: true, radiusUnits: orbitViewSw ? "pixels":"meters",
+              ...assignProps
+            })
+          )
+        }else
+        if(movesLayer === "GridCellLayer"){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          returnLayer.push(new GridCellLayer({ id: 'GridCellLayer', data: movedData,
+              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+              getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+              getElevation: x => x[elevationStr] || 1,
+              cellSize: (heatmapArea*1000), opacity: 0.5, pickable: true, onHover,
               ...assignProps
             })
           )
