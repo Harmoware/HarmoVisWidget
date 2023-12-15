@@ -53,6 +53,7 @@ const App = (props)=>{
   const [textColorStr,setTextColor] = useState("textColor")
   const [colorStr,setColorStr] = useState("color")
   const [distance_rate,setDistance_rate] = useState([0.0110910, 0.0090123])  //初期値は北緯37度での係数（度/km）
+  const [cellSize,setCellSize] = useState(1000)
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, widgetParam } = props;
@@ -160,9 +161,9 @@ const App = (props)=>{
     findIdx = widgetParam.movesLayer.findIndex((x)=>x === "GridCellLayer")
     if(findIdx >= 0){
       const assignProps = widgetParam.movesLayer[findIdx+1]
-      const {heatmapArea,elevationStr,colorStr} = JSON.parse(assignProps)
-      if(heatmapArea !== undefined && !isNaN(heatmapArea)){
-        setHeatmapArea(heatmapArea)
+      const {cellSize,elevationStr,colorStr} = JSON.parse(assignProps)
+      if(cellSize !== undefined && !isNaN(cellSize)){
+        setCellSize(cellSize)
       }
       if(elevationStr !== undefined && isNaN(elevationStr)){
         setElevationStr(elevationStr)
@@ -346,7 +347,7 @@ const App = (props)=>{
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
               getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
               getElevation: x => x[elevationStr] || 1,
-              cellSize: (heatmapArea*1000), opacity: 0.5, pickable: true, onHover,
+              cellSize: cellSize, opacity: 0.5, pickable: true, onHover,
               ...assignProps
             })
           )
