@@ -341,7 +341,7 @@ const App = (props)=>{
             })
           )
         }else
-        if(movesLayer === "GridCellLayer"){
+        if((movesLayer === "GridCellLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
           returnLayer.push(new GridCellLayer({ id: 'GridCellLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
