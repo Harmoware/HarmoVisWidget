@@ -252,12 +252,41 @@ const App = (props)=>{
         const movesLayer = movesLayers[i]
         if(movesLayer === "TextLayer"){
           const assignProps = JSON.parse(movesLayers[i+1])
+          const {getText,getSize,getColor,getAngle,...otherProps} = assignProps
+          if(getText !== undefined){
+            if(typeof getText === "string"){
+              otherProps.getText = new Function('d',`return ${getText}`)
+            }else{
+              otherProps.getText = getText
+            }
+          }
+          if(getSize !== undefined){
+            if(typeof getSize === "string"){
+              otherProps.getSize = new Function('d',`return ${getSize}`)
+            }else{
+              otherProps.getSize = getSize
+            }
+          }
+          if(getColor !== undefined){
+            if(typeof getColor === "string"){
+              otherProps.getColor = new Function('d',`return ${getColor}`)
+            }else{
+              otherProps.getColor = getColor
+            }
+          }
+          if(getAngle !== undefined){
+            if(typeof getAngle === "string"){
+              otherProps.getAngle = new Function('d',`return ${getAngle}`)
+            }else{
+              otherProps.getAngle = getAngle
+            }
+          }
           returnLayer.push(new TextLayer({ id: 'TextLayer', data: movedData,
             coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
             getPosition: x => x.position, getText: x => x[textStr] || "", getColor: x => x[textColorStr] || [255,255,255,255],
             characterSet: 'auto', sizeUnits: orbitViewSw ? "pixels":"meters", getSize: (textSiza*(orbitViewSw ? 1:10)),
             getTextAnchor: 'start', pickable: true, onHover,
-            ...assignProps
+            ...otherProps
           }))
         }else
         if((movesLayer === "MovesLayer") && !orbitViewSw){
@@ -274,16 +303,46 @@ const App = (props)=>{
         }else
         if(movesLayer === "PointCloudLayer"){
           const assignProps = JSON.parse(movesLayers[i+1])
+          const {getNormal,getColor,...otherProps} = assignProps
+          if(getNormal !== undefined){
+            if(typeof getNormal === "string"){
+              otherProps.getNormal = new Function('d',`return ${getNormal}`)
+            }else{
+              otherProps.getNormal = getNormal
+            }
+          }
+          if(getColor !== undefined){
+            if(typeof getColor === "string"){
+              otherProps.getColor = new Function('d',`return ${getColor}`)
+            }else{
+              otherProps.getColor = getColor
+            }
+          }
           returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
               getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
               pointSize: pointSiza, pickable: true, onHover,
-              ...assignProps
+              ...otherProps
             })
           )
         }else
         if((movesLayer === "Heatmap3dLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
+          const {getLineColor,getLineWidth,...otherProps} = assignProps
+          if(getLineColor !== undefined){
+            if(typeof getLineColor === "string"){
+              otherProps.getLineColor = new Function('d',`return ${getLineColor}`)
+            }else{
+              otherProps.getLineColor = getLineColor
+            }
+          }
+          if(getLineWidth !== undefined){
+            if(typeof getLineWidth === "string"){
+              otherProps.getLineWidth = new Function('d',`return ${getLineWidth}`)
+            }else{
+              otherProps.getLineWidth = getLineWidth
+            }
+          }
           const heatmapData = movedData.reduce((heatmapData,x)=>{
             const elevation = x[elevationStr]===undefined ? 1 : x[elevationStr]
             if(x.position){
@@ -320,35 +379,95 @@ const App = (props)=>{
               getLineColor: null,
               getElevation: (x) => x.elevation || 0, elevationScale: 100,
               opacity: 0.5, pickable: true, onHover,
-              ...assignProps
+              ...otherProps
           }))
         }else
         if((movesLayer === "Heatmap2dLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
+          const {getWeight,...otherProps} = assignProps
+          if(getWeight !== undefined){
+            if(typeof getWeight === "string"){
+              otherProps.getWeight = new Function('d',`return ${getWeight}`)
+            }else{
+              otherProps.getWeight = getWeight
+            }
+          }
           returnLayer.push(new HeatmapLayer({ id: 'Heatmap2dLayer', data: movedData,
               getPosition: x => x.position, getWeight: x => x[elevationStr] || 1,
               colorRange: heatmapColor, pickable: true, onHover,
-              ...assignProps
+              ...otherProps
           }))
         }else
         if(movesLayer === "ScatterplotLayer"){
           const assignProps = JSON.parse(movesLayers[i+1])
+          const {getRadius,getColor,getFillColor,getLineColor,getLineWidth,...otherProps} = assignProps
+          if(getRadius !== undefined){
+            if(typeof getRadius === "string"){
+              otherProps.getRadius = new Function('d',`return ${getRadius}`)
+            }else{
+              otherProps.getRadius = getRadius
+            }
+          }
+          if(getColor !== undefined){
+            if(typeof getColor === "string"){
+              otherProps.getColor = new Function('d',`return ${getColor}`)
+            }else{
+              otherProps.getColor = getColor
+            }
+          }
+          if(getFillColor !== undefined){
+            if(typeof getFillColor === "string"){
+              otherProps.getFillColor = new Function('d',`return ${getFillColor}`)
+            }else{
+              otherProps.getFillColor = getFillColor
+            }
+          }
+          if(getLineColor !== undefined){
+            if(typeof getLineColor === "string"){
+              otherProps.getLineColor = new Function('d',`return ${getLineColor}`)
+            }else{
+              otherProps.getLineColor = getLineColor
+            }
+          }
+          if(getLineWidth !== undefined){
+            if(typeof getLineWidth === "string"){
+              otherProps.getLineWidth = new Function('d',`return ${getLineWidth}`)
+            }else{
+              otherProps.getLineWidth = getLineWidth
+            }
+          }
           returnLayer.push(new ScatterplotLayer({ id: 'ScatterplotLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
               getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
-              getRadius: pointSiza, pickable: true, onHover, billboard: true, radiusUnits: orbitViewSw ? "pixels":"meters",
-              ...assignProps
+              getRadius: pointSiza, pickable: true, onHover, billboard: true,
+              radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
+              ...otherProps
             })
           )
         }else
         if((movesLayer === "GridCellLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
+          const {getColor,getElevation,...otherProps} = assignProps
+          if(getColor !== undefined){
+            if(typeof getColor === "string"){
+              otherProps.getColor = new Function('d',`return ${getColor}`)
+            }else{
+              otherProps.getColor = getColor
+            }
+          }
+          if(getElevation !== undefined){
+            if(typeof getElevation === "string"){
+              otherProps.getElevation = new Function('d',`return ${getElevation}`)
+            }else{
+              otherProps.getElevation = getElevation
+            }
+          }
           returnLayer.push(new GridCellLayer({ id: 'GridCellLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
               getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
               getElevation: x => x[elevationStr] || 1,
               cellSize: cellSize, opacity: 0.5, pickable: true, onHover,
-              ...assignProps
+              ...otherProps
             })
           )
         }
