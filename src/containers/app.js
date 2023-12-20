@@ -438,7 +438,7 @@ const App = (props)=>{
           }
           returnLayer.push(new ScatterplotLayer({ id: 'ScatterplotLayer', data: movedData,
               coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+              getPosition: x => x.position, getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
               getRadius: pointSiza, pickable: true, onHover, billboard: true,
               radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
               ...otherProps
