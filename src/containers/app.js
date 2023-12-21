@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import {
-  PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer, GridCellLayer, COORDINATE_SYSTEM, OrbitView
+  PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer, GridCellLayer, ColumnLayer, COORDINATE_SYSTEM, OrbitView
 } from 'deck.gl';
 import {
   Container, connectToHarmowareVis, HarmoVisLayers, MovesLayer, DepotsLayer, LoadingIcon
@@ -158,7 +158,7 @@ const App = (props)=>{
         setColorStr(colorStr)
       }
     }
-    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "GridCellLayer")
+    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "GridCellLayer" || x === "ColumnLayer")
     if(findIdx >= 0){
       const assignProps = widgetParam.movesLayer[findIdx+1]
       const {cellSize,elevationStr,colorStr} = JSON.parse(assignProps)
@@ -467,6 +467,47 @@ const App = (props)=>{
               getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
               getElevation: x => x[elevationStr] || 1,
               cellSize: cellSize, opacity: 0.5, pickable: true, onHover,
+              ...otherProps
+            })
+          )
+        }else
+        if(movesLayer === "ColumnLayer"){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          const {getFillColor,getLineColor,getLineWidth,getElevation,...otherProps} = assignProps
+          if(getFillColor !== undefined){
+            if(typeof getFillColor === "string"){
+              otherProps.getFillColor = new Function('d',`return ${getFillColor}`)
+            }else{
+              otherProps.getFillColor = getFillColor
+            }
+          }
+          if(getLineColor !== undefined){
+            if(typeof getLineColor === "string"){
+              otherProps.getLineColor = new Function('d',`return ${getLineColor}`)
+            }else{
+              otherProps.getLineColor = getLineColor
+            }
+          }
+          if(getLineWidth !== undefined){
+            if(typeof getLineWidth === "string"){
+              otherProps.getLineWidth = new Function('d',`return ${getLineWidth}`)
+            }else{
+              otherProps.getLineWidth = getLineWidth
+            }
+          }
+          if(getElevation !== undefined){
+            if(typeof getElevation === "string"){
+              otherProps.getElevation = new Function('d',`return ${getElevation}`)
+            }else{
+              otherProps.getElevation = getElevation
+            }
+          }
+          returnLayer.push(new ColumnLayer({ id: 'ColumnLayer', data: movedData,
+              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+              getPosition: x => x.position, getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+              getElevation: x => x[elevationStr] || 1,
+              radius: orbitViewSw ? (cellSize/1000):cellSize, pickable: true, onHover,
+              radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
               ...otherProps
             })
           )
