@@ -53,6 +53,8 @@ const App = (props)=>{
   const [textColorStr,setTextColor] = useState("textColor")
   const [colorStr,setColorStr] = useState("color")
   const [distance_rate,setDistance_rate] = useState([0.0110910, 0.0090123])  //初期値は北緯37度での係数（度/km）
+  const [movesLayers,setMovesLayers] = useState(["","{}"])
+  const [depotsLayers,setDepotsLayers] = useState(["","{}"])
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, widgetParam } = props;
@@ -108,67 +110,96 @@ const App = (props)=>{
   },[widgetParam.depotsBase])
 
   React.useEffect(()=>{
-    let findIdx = widgetParam.movesLayer.findIndex((x)=>x === "Heatmap3dLayer")
-    if(findIdx >= 0){
-      const assignProps = widgetParam.movesLayer[findIdx+1]
-      const {heatmapArea,heatmapColor,heatmapMaxValue,elevationStr} = JSON.parse(assignProps)
-      if(heatmapArea !== undefined && !isNaN(heatmapArea)){
-        setHeatmapArea(heatmapArea)
-      }
-      if(heatmapColor !== undefined && Array.isArray(heatmapColor)){
-        setHeatmapColor(heatmapColor)
-      }
-      if(heatmapMaxValue !== undefined && !isNaN(heatmapMaxValue)){
-        setHeatmapMaxValue(heatmapMaxValue)
-      }else{
-        setHeatmapMaxValue(0)
-      }
-      if(elevationStr !== undefined && isNaN(elevationStr)){
-        setElevationStr(elevationStr)
+    const movesLayers = [...widgetParam.movesLayer]
+    for(let i=0; i<movesLayers.length; i=i+1){
+      const movesLayer = movesLayers[i]
+      if(movesLayer === "Heatmap3dLayer"){
+        const assignProps = movesLayers[i+1]
+        const {heatmapArea,heatmapColor,heatmapMaxValue,elevationStr} = JSON.parse(assignProps)
+        if(heatmapArea !== undefined && !isNaN(heatmapArea)){
+          setHeatmapArea(heatmapArea)
+        }
+        if(heatmapColor !== undefined && Array.isArray(heatmapColor)){
+          setHeatmapColor(heatmapColor)
+        }
+        if(heatmapMaxValue !== undefined && !isNaN(heatmapMaxValue)){
+          setHeatmapMaxValue(heatmapMaxValue)
+        }else{
+          setHeatmapMaxValue(0)
+        }
+        if(elevationStr !== undefined && isNaN(elevationStr)){
+          setElevationStr(elevationStr)
+        }
+      }else
+      if(movesLayer === "Heatmap2dLayer"){
+        const assignProps = movesLayers[i+1]
+        const {heatmapColor,elevationStr} = JSON.parse(assignProps)
+        if(heatmapColor !== undefined && Array.isArray(heatmapColor)){
+          setHeatmapColor(heatmapColor)
+        }
+        if(elevationStr !== undefined && isNaN(elevationStr)){
+          setElevationStr(elevationStr)
+        }
+      }else
+      if(movesLayer === "TextLayer"){
+        const assignProps = movesLayers[i+1]
+        const {textStr,textColorStr} = JSON.parse(assignProps)
+        if(textStr !== undefined && isNaN(textStr)){
+          setTextStr(textStr)
+        }
+        if(textColorStr !== undefined && isNaN(textColorStr)){
+          setTextColor(textColorStr)
+        }
+      }else
+      if(movesLayer === "MovesLayer"){
+        const assignProps = movesLayers[i+1]
+        const {colorStr} = JSON.parse(assignProps)
+        if(colorStr !== undefined && isNaN(colorStr)){
+          setColorStr(colorStr)
+        }
+      }else
+      if(movesLayer === "PointCloudLayer"){
+        const assignProps = movesLayers[i+1]
+        const {colorStr} = JSON.parse(assignProps)
+        if(colorStr !== undefined && isNaN(colorStr)){
+          setColorStr(colorStr)
+        }
+      }else
+      if(movesLayer === "ScatterplotLayer"){
+        const assignProps = movesLayers[i+1]
+        const {colorStr} = JSON.parse(assignProps)
+        if(colorStr !== undefined && isNaN(colorStr)){
+          setColorStr(colorStr)
+        }
+      }else
+      if(movesLayer === "GridCellLayer"){
+        const assignProps = movesLayers[i+1]
+        const {elevationStr,colorStr} = JSON.parse(assignProps)
+        if(elevationStr !== undefined && isNaN(elevationStr)){
+          setElevationStr(elevationStr)
+        }
+        if(colorStr !== undefined && isNaN(colorStr)){
+          setColorStr(colorStr)
+        }
+      }else
+      if(movesLayer === "ColumnLayer"){
+        const assignProps = movesLayers[i+1]
+        const {elevationStr,colorStr} = JSON.parse(assignProps)
+        if(elevationStr !== undefined && isNaN(elevationStr)){
+          setElevationStr(elevationStr)
+        }
+        if(colorStr !== undefined && isNaN(colorStr)){
+          setColorStr(colorStr)
+        }
       }
     }
-    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "Heatmap2dLayer")
-    if(findIdx >= 0){
-      const assignProps = widgetParam.movesLayer[findIdx+1]
-      const {heatmapColor,elevationStr} = JSON.parse(assignProps)
-      if(heatmapColor !== undefined && Array.isArray(heatmapColor)){
-        setHeatmapColor(heatmapColor)
-      }
-      if(elevationStr !== undefined && isNaN(elevationStr)){
-        setElevationStr(elevationStr)
-      }
-    }
-    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "TextLayer")
-    if(findIdx >= 0){
-      const assignProps = widgetParam.movesLayer[findIdx+1]
-      const {textStr,textColorStr} = JSON.parse(assignProps)
-      if(textStr !== undefined && isNaN(textStr)){
-        setTextStr(textStr)
-      }
-      if(textColorStr !== undefined && isNaN(textColorStr)){
-        setTextColor(textColorStr)
-      }
-    }
-    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "MovesLayer" || x === "PointCloudLayer" || x === "ScatterplotLayer")
-    if(findIdx >= 0){
-      const assignProps = widgetParam.movesLayer[findIdx+1]
-      const {colorStr} = JSON.parse(assignProps)
-      if(colorStr !== undefined && isNaN(colorStr)){
-        setColorStr(colorStr)
-      }
-    }
-    findIdx = widgetParam.movesLayer.findIndex((x)=>x === "GridCellLayer" || x === "ColumnLayer")
-    if(findIdx >= 0){
-      const assignProps = widgetParam.movesLayer[findIdx+1]
-      const {elevationStr,colorStr} = JSON.parse(assignProps)
-      if(elevationStr !== undefined && isNaN(elevationStr)){
-        setElevationStr(elevationStr)
-      }
-      if(colorStr !== undefined && isNaN(colorStr)){
-        setColorStr(colorStr)
-      }
-    }
+    setMovesLayers(movesLayers)
+    console.log(`movesLayer`)
   },[widgetParam.movesLayer])
+
+  React.useEffect(()=>{
+    setDepotsLayers([...widgetParam.depotsLayer])
+  },[widgetParam.depotsLayer])
 
   React.useEffect(()=>{
     depotsData.reverse()
@@ -228,16 +259,6 @@ const App = (props)=>{
 
   const getIconCubeTypeSelected = (e)=>{
     setState({ ...state, iconCubeType: +e.target.value });
-  }
-
-  let {movesLayer:movesLayers, depotsLayer:depotsLayers} = widgetParam
-
-  if(movesLayers === undefined){
-    movesLayers = ["",{}]
-  }
-
-  if(depotsLayers === undefined){
-    depotsLayers = ["",{}]
   }
 
   const getLayer = ()=>{
