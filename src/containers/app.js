@@ -110,6 +110,7 @@ const App = (props)=>{
   },[widgetParam.depotsBase])
 
   React.useEffect(()=>{
+    if(widgetParam.movesLayer === undefined)return
     const movesLayers = [...widgetParam.movesLayer]
     for(let i=0; i<movesLayers.length; i=i+1){
       const movesLayer = movesLayers[i]
@@ -198,6 +199,7 @@ const App = (props)=>{
   },[widgetParam.movesLayer])
 
   React.useEffect(()=>{
+    if(widgetParam.depotsLayer === undefined)return
     setDepotsLayers([...widgetParam.depotsLayer])
   },[widgetParam.depotsLayer])
 
