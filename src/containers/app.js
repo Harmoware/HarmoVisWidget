@@ -74,6 +74,7 @@ const App = (props)=>{
         actions.setMultiplySpeed(property.multiplySpeed);
       }
     }
+    console.log("start!")
   },[])
 
   React.useEffect(()=>{
@@ -322,7 +323,7 @@ const App = (props)=>{
         }else
         if(movesLayer === "PointCloudLayer"){
           const assignProps = JSON.parse(movesLayers[i+1])
-          const {getNormal,getColor,...otherProps} = assignProps
+          const {getNormal,getColor,dataLabel,...otherProps} = assignProps
           if(getNormal !== undefined){
             if(typeof getNormal === "string"){
               otherProps.getNormal = new Function('d',`return ${getNormal}`)
@@ -337,13 +338,25 @@ const App = (props)=>{
               otherProps.getColor = getColor
             }
           }
-          returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
-              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
-              pointSize: pointSiza, pickable: true, onHover,
-              ...otherProps
-            })
-          )
+          if(dataLabel !== undefined && typeof dataLabel === "string"){
+            for(let j=0; j<movedData.length; j=j+1){
+              returnLayer.push(new PointCloudLayer({ id: `PointCloudLayer-${j}`, data: movedData[j][dataLabel],
+                  coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                  getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                  pointSize: pointSiza, pickable: true, onHover,
+                  ...otherProps
+                })
+              )
+            }
+          }else{
+            returnLayer.push(new PointCloudLayer({ id: 'PointCloudLayer', data: movedData,
+                coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                pointSize: pointSiza, pickable: true, onHover,
+                ...otherProps
+              })
+            )
+          }
         }else
         if((movesLayer === "Heatmap3dLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
@@ -403,7 +416,7 @@ const App = (props)=>{
         }else
         if((movesLayer === "Heatmap2dLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
-          const {getWeight,...otherProps} = assignProps
+          const {getWeight,dataLabel,...otherProps} = assignProps
           if(getWeight !== undefined){
             if(typeof getWeight === "string"){
               otherProps.getWeight = new Function('d',`return ${getWeight}`)
@@ -411,15 +424,25 @@ const App = (props)=>{
               otherProps.getWeight = getWeight
             }
           }
-          returnLayer.push(new HeatmapLayer({ id: 'Heatmap2dLayer', data: movedData,
-              getPosition: x => x.position, getWeight: x => x[elevationStr] || 1,
-              colorRange: heatmapColor, pickable: true, onHover,
-              ...otherProps
-          }))
+          if(dataLabel !== undefined && typeof dataLabel === "string"){
+            for(let j=0; j<movedData.length; j=j+1){
+              returnLayer.push(new HeatmapLayer({ id: `Heatmap2dLayer-${j}`, data: movedData[j][dataLabel],
+                  getPosition: x => x.position, getWeight: x => x[elevationStr] || 1,
+                  colorRange: heatmapColor, pickable: true, onHover,
+                  ...otherProps
+              }))
+            }
+          }else{
+            returnLayer.push(new HeatmapLayer({ id: 'Heatmap2dLayer', data: movedData,
+                getPosition: x => x.position, getWeight: x => x[elevationStr] || 1,
+                colorRange: heatmapColor, pickable: true, onHover,
+                ...otherProps
+            }))
+          }
         }else
         if(movesLayer === "ScatterplotLayer"){
           const assignProps = JSON.parse(movesLayers[i+1])
-          const {getRadius,getColor,getFillColor,getLineColor,getLineWidth,...otherProps} = assignProps
+          const {getRadius,getColor,getFillColor,getLineColor,getLineWidth,dataLabel,...otherProps} = assignProps
           if(getRadius !== undefined){
             if(typeof getRadius === "string"){
               otherProps.getRadius = new Function('d',`return ${getRadius}`)
@@ -455,18 +478,31 @@ const App = (props)=>{
               otherProps.getLineWidth = getLineWidth
             }
           }
-          returnLayer.push(new ScatterplotLayer({ id: 'ScatterplotLayer', data: movedData,
-              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
-              getRadius: pointSiza, pickable: true, onHover, billboard: true,
-              radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
-              ...otherProps
-            })
-          )
+          if(dataLabel !== undefined && typeof dataLabel === "string"){
+            for(let j=0; j<movedData.length; j=j+1){
+              returnLayer.push(new ScatterplotLayer({ id: `ScatterplotLayer-${j}`, data: movedData[j][dataLabel],
+                  coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                  getPosition: x => x.position, getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                  getRadius: pointSiza, pickable: true, onHover, billboard: true,
+                  radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
+                  ...otherProps
+                })
+              )
+            }
+          }else{
+            returnLayer.push(new ScatterplotLayer({ id: 'ScatterplotLayer', data: movedData,
+                coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                getPosition: x => x.position, getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                getRadius: pointSiza, pickable: true, onHover, billboard: true,
+                radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
+                ...otherProps
+              })
+            )
+          }
         }else
         if((movesLayer === "GridCellLayer") && !orbitViewSw){
           const assignProps = JSON.parse(movesLayers[i+1])
-          const {getColor,getElevation,...otherProps} = assignProps
+          const {getColor,getElevation,dataLabel,...otherProps} = assignProps
           if(getColor !== undefined){
             if(typeof getColor === "string"){
               otherProps.getColor = new Function('d',`return ${getColor}`)
@@ -481,18 +517,31 @@ const App = (props)=>{
               otherProps.getElevation = getElevation
             }
           }
-          returnLayer.push(new GridCellLayer({ id: 'GridCellLayer', data: movedData,
-              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
-              getElevation: x => x[elevationStr] || 1,
-              cellSize: 1000, opacity: 0.5, pickable: true, onHover,
-              ...otherProps
-            })
-          )
+          if(dataLabel !== undefined && typeof dataLabel === "string"){
+            for(let j=0; j<movedData.length; j=j+1){
+              returnLayer.push(new GridCellLayer({ id: `GridCellLayer-${j}`, data: movedData[j][dataLabel],
+                  coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                  getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                  getElevation: x => x[elevationStr] || 1,
+                  cellSize: 1000, opacity: 0.5, pickable: true, onHover,
+                  ...otherProps
+                })
+              )
+            }
+          }else{
+            returnLayer.push(new GridCellLayer({ id: 'GridCellLayer', data: movedData,
+                coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                getElevation: x => x[elevationStr] || 1,
+                cellSize: 1000, opacity: 0.5, pickable: true, onHover,
+                ...otherProps
+              })
+            )
+          }
         }else
         if(movesLayer === "ColumnLayer"){
           const assignProps = JSON.parse(movesLayers[i+1])
-          const {getFillColor,getLineColor,getLineWidth,getElevation,...otherProps} = assignProps
+          const {getFillColor,getLineColor,getLineWidth,getElevation,dataLabel,...otherProps} = assignProps
           if(getFillColor !== undefined){
             if(typeof getFillColor === "string"){
               otherProps.getFillColor = new Function('d',`return ${getFillColor}`)
@@ -521,15 +570,29 @@ const App = (props)=>{
               otherProps.getElevation = getElevation
             }
           }
-          returnLayer.push(new ColumnLayer({ id: 'ColumnLayer', data: movedData,
-              coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
-              getPosition: x => x.position, getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
-              getElevation: x => x[elevationStr] || 1,
-              radius: orbitViewSw ? 1:1000, opacity: 0.5, pickable: true, onHover,
-              radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
-              ...otherProps
-            })
-          )
+          if(dataLabel !== undefined && typeof dataLabel === "string"){
+            for(let j=0; j<movedData.length; j=j+1){
+              returnLayer.push(new ColumnLayer({ id: `ColumnLayer-${j}`, data: movedData[j][dataLabel],
+                  coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                  getPosition: x => x.position, getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                  getElevation: x => x[elevationStr] || 1,
+                  radius: orbitViewSw ? 1:1000, opacity: 0.5, pickable: true, onHover,
+                  radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
+                  ...otherProps
+                })
+              )
+            }
+          }else{
+            returnLayer.push(new ColumnLayer({ id: 'ColumnLayer', data: movedData,
+                coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                getPosition: x => x.position, getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                getElevation: x => x[elevationStr] || 1,
+                radius: orbitViewSw ? 1:1000, opacity: 0.5, pickable: true, onHover,
+                radiusUnits: orbitViewSw ? "pixels":"meters", lineWidthUnits: orbitViewSw ? "pixels":"meters",
+                ...otherProps
+              })
+            )
+          }
         }
       }
     }
