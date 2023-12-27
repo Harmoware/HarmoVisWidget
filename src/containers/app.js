@@ -193,6 +193,17 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
+      }else
+      if(movesLayer === "PolygonLayer"){
+        const assignProps = movesLayers[i+1]
+        const {elevationStr,colorStr} = JSON.parse(assignProps)
+        if(elevationStr !== undefined && isNaN(elevationStr)){
+          setElevationStr(elevationStr)
+        }
+        if(colorStr !== undefined && isNaN(colorStr)){
+          setColorStr(colorStr)
+        }
+
       }
     }
     setMovesLayers(movesLayers)
@@ -592,6 +603,61 @@ const App = (props)=>{
                 ...otherProps
               })
             )
+          }
+        }else
+        if(movesLayer === "PolygonLayer"){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          const {getPolygon,getFillColor,getLineWidth,getElevation,dataLabel,...otherProps} = assignProps
+          if(getPolygon !== undefined){
+            if(typeof getPolygon === "string"){
+              otherProps.getPolygon = new Function('d',`return ${getPolygon}`)
+            }else{
+              otherProps.getPolygon = getPolygon
+            }
+          }
+          if(getFillColor !== undefined){
+            if(typeof getFillColor === "string"){
+              otherProps.getFillColor = new Function('d',`return ${getFillColor}`)
+            }else{
+              otherProps.getFillColor = getFillColor
+            }
+          }
+          if(getLineWidth !== undefined){
+            if(typeof getLineWidth === "string"){
+              otherProps.getLineWidth = new Function('d',`return ${getLineWidth}`)
+            }else{
+              otherProps.getLineWidth = getLineWidth
+            }
+          }
+          if(getElevation !== undefined){
+            if(typeof getElevation === "string"){
+              otherProps.getElevation = new Function('d',`return ${getElevation}`)
+            }else{
+              otherProps.getElevation = getElevation
+            }
+          }
+          if(dataLabel !== undefined && typeof dataLabel === "string"){
+            for(let j=0; j<movedData.length; j=j+1){
+              returnLayer.push(new PolygonLayer({ id: `PolygonLayer-${j}`, data: movedData[j][dataLabel],
+                  extruded: true, wireframe: false,
+                  getPolygon: (x) => x.polygon,
+                  getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                  getLineColor: null,
+                  getElevation: x => x[elevationStr] || 1,
+                  opacity: 0.5, pickable: true, onHover,
+                  ...otherProps
+              }))
+            }
+          }else{
+            returnLayer.push(new PolygonLayer({ id: 'PolygonLayer', data: movedData,
+                extruded: true, wireframe: false,
+                getPolygon: (x) => x.polygon,
+                getFillColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                getLineColor: null,
+                getElevation: x => x[elevationStr] || 1,
+                opacity: 0.5, pickable: true, onHover,
+                ...otherProps
+            }))
           }
         }
       }
