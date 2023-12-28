@@ -126,7 +126,8 @@ const Controller = (props)=>{
 
   const MovedIconColor = ()=>{
     if((movesLayers.includes("MovesLayer")||movesLayers.includes("PointCloudLayer")||movesLayers.includes("ScatterplotLayer")||
-      movesLayers.includes("GridCellLayer")||movesLayers.includes("ColumnLayer")||movesLayers.includes("PolygonLayer"))&&movedData.length > 0){
+      movesLayers.includes("GridCellLayer")||movesLayers.includes("ColumnLayer")||movesLayers.includes("PolygonLayer")||
+      movesLayers.includes("SimpleMeshLayer"))&&movedData.length > 0){
       return(
         <li className="flex_row">
           <div className="form-select" title='移動アイコン色'>

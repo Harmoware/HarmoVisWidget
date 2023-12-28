@@ -1,12 +1,33 @@
 import React, { useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import {
-  PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer, GridCellLayer, ColumnLayer, COORDINATE_SYSTEM, OrbitView
+  PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer, GridCellLayer, ColumnLayer, SimpleMeshLayer,
+  COORDINATE_SYSTEM, OrbitView
 } from 'deck.gl';
+import { CubeGeometry } from '@luma.gl/engine'
 import {
   Container, connectToHarmowareVis, HarmoVisLayers, MovesLayer, DepotsLayer, LoadingIcon
 } from 'harmoware-vis';
 import Controller from '../components/controller';
+
+import {registerLoaders} from '@loaders.gl/core';
+import {OBJLoader} from '@loaders.gl/obj';
+registerLoaders([OBJLoader]);
+
+const CUBE_POSITIONS = new Float32Array([
+  -1,-1,2,1,-1,2,1,1,2,-1,1,2,
+  -1,-1,-2,-1,1,-2,1,1,-2,1,-1,-2,
+  -1,1,-2,-1,1,2,1,1,2,1,1,-2,
+  -1,-1,-2,1,-1,-2,1,-1,2,-1,-1,2,
+  1,-1,-2,1,1,-2,1,1,2,1,-1,2,
+  -1,-1,-2,-1,-1,2,-1,1,2,-1,1,-2
+  ]);
+
+const ATTRIBUTES = {
+  POSITION: {size: 3, value: new Float32Array(CUBE_POSITIONS)},
+};
+
+const defaultmesh = new CubeGeometry({attributes: ATTRIBUTES});
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -74,7 +95,7 @@ const App = (props)=>{
         actions.setMultiplySpeed(property.multiplySpeed);
       }
     }
-    console.log("start!")
+    console.log("HarmoVisWidget start!")
   },[])
 
   React.useEffect(()=>{
@@ -203,7 +224,13 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
-
+      }else
+      if(movesLayer === "SimpleMeshLayer"){
+        const assignProps = movesLayers[i+1]
+        const {colorStr} = JSON.parse(assignProps)
+        if(colorStr !== undefined && isNaN(colorStr)){
+          setColorStr(colorStr)
+        }
       }
     }
     setMovesLayers(movesLayers)
@@ -658,6 +685,66 @@ const App = (props)=>{
                 opacity: 0.5, pickable: true, onHover,
                 ...otherProps
             }))
+          }
+        }else
+        if(movesLayer === "SimpleMeshLayer"){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          const {getColor,getOrientation,getScale,getTranslation,getTransformMatrix,dataLabel,...otherProps} = assignProps
+          if(getColor !== undefined){
+            if(typeof getColor === "string"){
+              otherProps.getColor = new Function('d',`return ${getColor}`)
+            }else{
+              otherProps.getColor = getColor
+            }
+          }
+          if(getOrientation !== undefined){
+            if(typeof getOrientation === "string"){
+              otherProps.getOrientation = new Function('d',`return ${getOrientation}`)
+            }else{
+              otherProps.getOrientation = getOrientation
+            }
+          }
+          if(getScale !== undefined){
+            if(typeof getScale === "string"){
+              otherProps.getScale = new Function('d',`return ${getScale}`)
+            }else{
+              otherProps.getScale = getScale
+            }
+          }
+          if(getTranslation !== undefined){
+            if(typeof getTranslation === "string"){
+              otherProps.getTranslation = new Function('d',`return ${getTranslation}`)
+            }else{
+              otherProps.getTranslation = getTranslation
+            }
+          }
+          if(getTransformMatrix !== undefined){
+            if(typeof getTransformMatrix === "string"){
+              otherProps.getTransformMatrix = new Function('d',`return ${getTransformMatrix}`)
+            }else{
+              otherProps.getTransformMatrix = getTransformMatrix
+            }
+          }
+          if(dataLabel !== undefined && typeof dataLabel === "string"){
+            for(let j=0; j<movedData.length; j=j+1){
+              returnLayer.push(new SimpleMeshLayer({ id: `SimpleMeshLayer-${j}`, data: movedData[j][dataLabel],
+                  coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                  getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                  getOrientation: x => x.direction ? [0,-x.direction,90] : [0,0,90],
+                  mesh: defaultmesh, sizeScale: 20, opacity: 0.5, pickable: true, onHover,
+                  ...otherProps
+                })
+              )
+            }
+          }else{
+            returnLayer.push(new SimpleMeshLayer({ id: 'SimpleMeshLayer', data: movedData,
+                coordinateSystem: orbitViewSw ? COORDINATE_SYSTEM.CARTESIAN : COORDINATE_SYSTEM.DEFAULT,
+                getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
+                getOrientation: x => x.direction ? [0,-x.direction,90] : [0,0,90],
+                mesh: defaultmesh, sizeScale: 20, opacity: 0.5, pickable: true, onHover,
+                ...otherProps
+              })
+            )
           }
         }
       }
