@@ -76,6 +76,7 @@ const App = (props)=>{
   const [distance_rate,setDistance_rate] = useState([0.0110910, 0.0090123])  //初期値は北緯37度での係数（度/km）
   const [movesLayers,setMovesLayers] = useState(["","{}"])
   const [depotsLayers,setDepotsLayers] = useState(["","{}"])
+  const [deckGLProps,setDeckGLProps] = useState({})
 
   const { actions, clickedObject, viewport, loading,
     routePaths, movesbase, movedData, widgetParam } = props;
@@ -93,6 +94,9 @@ const App = (props)=>{
       }
       if(property.multiplySpeed !== undefined){
         actions.setMultiplySpeed(property.multiplySpeed);
+      }
+      if(property.deckGLProps !== undefined){
+        setDeckGLProps(property.deckGLProps);
       }
     }
     console.log("HarmoVisWidget start!")
@@ -792,10 +796,10 @@ const App = (props)=>{
     }
   }
   const harmoVisLayersProps = {
-    ...getMapStyle(),viewport,actions,layers:getLayer()
+    ...getMapStyle(),viewport,actions,layers:getLayer(),deckGLProps
   }
   const deckgLProps = {views:new OrbitView({orbitAxis: 'Z', fov: 50}), viewState, controller:{scrollZoom:{smooth:true}},
-    onViewStateChange:v => updateViewState(v.viewState), layers:getLayer()
+    onViewStateChange:v => updateViewState(v.viewState), layers:getLayer(),...deckGLProps
   }
   const controllerProps = {...props, status:state, movesLayers, depotsLayers,
     pointSiza, setPointSiza, textSiza, setTextSiza, iconColor, setIconColor, dpIconColor, setDpIconColor,
