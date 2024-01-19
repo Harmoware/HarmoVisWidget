@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import {
-  PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer, GridCellLayer, ColumnLayer, SimpleMeshLayer,
+  PointCloudLayer, TextLayer, PolygonLayer, HeatmapLayer, LineLayer, ScatterplotLayer,
+  GridCellLayer, ColumnLayer, SimpleMeshLayer, ArcLayer,
   COORDINATE_SYSTEM, OrbitView
 } from 'deck.gl';
 import { CubeGeometry } from '@luma.gl/engine'
@@ -157,6 +158,7 @@ const App = (props)=>{
         if(elevationStr !== undefined && isNaN(elevationStr)){
           setElevationStr(elevationStr)
         }
+        console.log("Heatmap3dLayer")
       }else
       if(movesLayer === "Heatmap2dLayer"){
         const assignProps = movesLayers[i+1]
@@ -167,6 +169,7 @@ const App = (props)=>{
         if(elevationStr !== undefined && isNaN(elevationStr)){
           setElevationStr(elevationStr)
         }
+        console.log("Heatmap2dLayer")
       }else
       if(movesLayer === "TextLayer"){
         const assignProps = movesLayers[i+1]
@@ -177,6 +180,7 @@ const App = (props)=>{
         if(textColorStr !== undefined && isNaN(textColorStr)){
           setTextColor(textColorStr)
         }
+        console.log("TextLayer")
       }else
       if(movesLayer === "MovesLayer"){
         const assignProps = movesLayers[i+1]
@@ -184,6 +188,7 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
+        console.log("MovesLayer")
       }else
       if(movesLayer === "PointCloudLayer"){
         const assignProps = movesLayers[i+1]
@@ -191,6 +196,7 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
+        console.log("PointCloudLayer")
       }else
       if(movesLayer === "ScatterplotLayer"){
         const assignProps = movesLayers[i+1]
@@ -198,6 +204,7 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
+        console.log("ScatterplotLayer")
       }else
       if(movesLayer === "GridCellLayer"){
         const assignProps = movesLayers[i+1]
@@ -208,6 +215,7 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
+        console.log("GridCellLayer")
       }else
       if(movesLayer === "ColumnLayer"){
         const assignProps = movesLayers[i+1]
@@ -218,6 +226,7 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
+        console.log("ColumnLayer")
       }else
       if(movesLayer === "PolygonLayer"){
         const assignProps = movesLayers[i+1]
@@ -228,6 +237,7 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
+        console.log("PolygonLayer")
       }else
       if(movesLayer === "SimpleMeshLayer"){
         const assignProps = movesLayers[i+1]
@@ -235,10 +245,14 @@ const App = (props)=>{
         if(colorStr !== undefined && isNaN(colorStr)){
           setColorStr(colorStr)
         }
+        console.log("SimpleMeshLayer")
+      }else
+      if(movesLayer === "ArcLayer"){
+        console.log("ArcLayer")
       }
     }
     setMovesLayers(movesLayers)
-    console.log(`movesLayer`)
+    console.log(`movesLayer update!`)
   },[widgetParam.movesLayer])
 
   React.useEffect(()=>{
@@ -746,6 +760,81 @@ const App = (props)=>{
                 getPosition: x => x.position, getColor:x=>colorPallet[iconColor][0]||x[colorStr]||[0,255,0],
                 getOrientation: x => x.direction ? [0,-x.direction,90] : [0,0,90],
                 mesh: defaultmesh, sizeScale: 20, opacity: 0.5, pickable: true, onHover,
+                ...otherProps
+              })
+            )
+          }
+        }else
+        if((movesLayer === "ArcLayer") && !orbitViewSw){
+          const assignProps = JSON.parse(movesLayers[i+1])
+          const {getSourcePosition,getTargetPosition,getSourceColor,getTargetColor,
+            getWidth,getHeight,getTilt,dataLabel,...otherProps} = assignProps
+          if(getSourcePosition !== undefined){
+            if(typeof getSourcePosition === "string"){
+              otherProps.getSourcePosition = new Function('d',`return ${getSourcePosition}`)
+            }else{
+              otherProps.getSourcePosition = getSourcePosition
+            }
+          }
+          if(getTargetPosition !== undefined){
+            if(typeof getTargetPosition === "string"){
+              otherProps.getTargetPosition = new Function('d',`return ${getTargetPosition}`)
+            }else{
+              otherProps.getTargetPosition = getTargetPosition
+            }
+          }
+          if(getSourceColor !== undefined){
+            if(typeof getSourceColor === "string"){
+              otherProps.getSourceColor = new Function('d',`return ${getSourceColor}`)
+            }else{
+              otherProps.getSourceColor = getSourceColor
+            }
+          }
+          if(getTargetColor !== undefined){
+            if(typeof getTargetColor === "string"){
+              otherProps.getTargetColor = new Function('d',`return ${getTargetColor}`)
+            }else{
+              otherProps.getTargetColor = getTargetColor
+            }
+          }
+          if(getWidth !== undefined){
+            if(typeof getWidth === "string"){
+              otherProps.getWidth = new Function('d',`return ${getWidth}`)
+            }else{
+              otherProps.getWidth = getWidth
+            }
+          }
+          if(getHeight !== undefined){
+            if(typeof getHeight === "string"){
+              otherProps.getHeight = new Function('d',`return ${getHeight}`)
+            }else{
+              otherProps.getHeight = getHeight
+            }
+          }
+          if(getTilt !== undefined){
+            if(typeof getTilt === "string"){
+              otherProps.getTilt = new Function('d',`return ${getTilt}`)
+            }else{
+              otherProps.getTilt = getTilt
+            }
+          }
+          if(dataLabel !== undefined && typeof dataLabel === "string"){
+            for(let j=0; j<movedData.length; j=j+1){
+                  returnLayer.push(new ArcLayer({ id: `ArcLayer-${j}`, data: movedData[j][dataLabel],
+                  getSourcePosition: x => x.sourcePosition, getTargetPosition: x => x.targetPosition,
+                  getSourceColor:x=>colorPallet[iconColor][0]||x.sourceColor||[0,255,0],
+                  getTargetColor:x=>colorPallet[iconColor][0]||x.targetColor||[0,255,0],
+                  getWidth:10, widthUnits:'meters', widthMinPixels:0.1, opacity: 0.5, pickable: true, onHover,
+                  ...otherProps
+                })
+              )
+            }
+          }else{
+            returnLayer.push(new ArcLayer({ id: 'ArcLayer', data: movedData,
+                getSourcePosition: x => x.sourcePosition, getTargetPosition: x => x.targetPosition,
+                getSourceColor:x=>colorPallet[iconColor][0]||x.sourceColor||[0,255,0],
+                getTargetColor:x=>colorPallet[iconColor][0]||x.targetColor||[0,255,0],
+                getWidth:10, widthUnits:'meters', widthMinPixels:0.1, opacity: 0.5, pickable: true, onHover,
                 ...otherProps
               })
             )
