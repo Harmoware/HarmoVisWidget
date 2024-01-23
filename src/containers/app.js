@@ -106,7 +106,13 @@ const App = (props)=>{
   React.useEffect(()=>{
     if(widgetParam.viewport){
       actions.setViewport(widgetParam.viewport);
-      actions.setInitialViewChange(false);
+      actions.setDefaultViewport(widgetParam.viewport);
+      const {longitude,latitude} = widgetParam.viewport
+      if(longitude === undefined || latitude === undefined){
+        actions.setInitialViewChange(true);
+      }else{
+        actions.setInitialViewChange(false);
+      }
     }else{
       actions.setInitialViewChange(true);
     }
