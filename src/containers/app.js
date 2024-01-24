@@ -658,7 +658,7 @@ const App = (props)=>{
         }else
         if(movesLayer === "PolygonLayer"){
           const assignProps = JSON.parse(movesLayers[i+1])
-          const {getPolygon,getFillColor,getLineWidth,getElevation,dataLabel,...otherProps} = assignProps
+          const {getPolygon,getFillColor,getLineColor,getLineWidth,getElevation,dataLabel,...otherProps} = assignProps
           if(getPolygon !== undefined){
             if(typeof getPolygon === "string"){
               otherProps.getPolygon = new Function('d',`return ${getPolygon}`)
@@ -671,6 +671,13 @@ const App = (props)=>{
               otherProps.getFillColor = new Function('d',`return ${getFillColor}`)
             }else{
               otherProps.getFillColor = getFillColor
+            }
+          }
+          if(getLineColor !== undefined){
+            if(typeof getLineColor === "string"){
+              otherProps.getLineColor = new Function('d',`return ${getLineColor}`)
+            }else{
+              otherProps.getLineColor = getLineColor
             }
           }
           if(getLineWidth !== undefined){
