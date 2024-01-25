@@ -104,17 +104,25 @@ const App = (props)=>{
   },[])
 
   React.useEffect(()=>{
-    if(widgetParam.viewport){
-      actions.setViewport(widgetParam.viewport);
-      actions.setDefaultViewport(widgetParam.viewport);
-      const {longitude,latitude} = widgetParam.viewport
-      if(longitude === undefined || latitude === undefined){
-        actions.setInitialViewChange(true);
+    if(orbitViewSw){
+      if(widgetParam.viewport){
+        updateViewState({...viewState,...widgetParam.viewport})
       }else{
-        actions.setInitialViewChange(false);
+        updateViewState(INITIAL_VIEW_STATE)
       }
     }else{
-      actions.setInitialViewChange(true);
+      if(widgetParam.viewport){
+        actions.setViewport(widgetParam.viewport);
+        actions.setDefaultViewport(widgetParam.viewport);
+        const {longitude,latitude} = widgetParam.viewport
+        if(longitude === undefined || latitude === undefined){
+          actions.setInitialViewChange(true);
+        }else{
+          actions.setInitialViewChange(false);
+        }
+      }else{
+        actions.setInitialViewChange(true);
+      }
     }
   },[widgetParam.viewport])
 
